@@ -14,18 +14,18 @@ class TksApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'TKS Academy',
+        themeMode: ThemeMode.light,
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFFFFA500),
+            seedColor: const Color(0xFFF97316),
             brightness: Brightness.light,
           ),
-        ),
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFFFFA500),
-            brightness: Brightness.dark,
+          scaffoldBackgroundColor: const Color(0xFFFFF6EE),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFFFFF6EE),
+            foregroundColor: Color(0xFF3A1E0B),
+            elevation: 0,
           ),
         ),
         home: const SplashScreen(),
