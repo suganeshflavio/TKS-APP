@@ -43,16 +43,12 @@ class SchoolProfile {
     required this.location,
     required this.status,
     required this.batchCount,
-    required this.logoAsset,
-    required this.bannerAsset,
   });
 
   final String name;
   final String location;
   final String status;
   final int batchCount;
-  final String logoAsset;
-  final String bannerAsset;
 
   factory SchoolProfile.fromJson(Map<String, dynamic> json) {
     return SchoolProfile(
@@ -60,8 +56,6 @@ class SchoolProfile {
       location: json['location'] as String,
       status: json['status'] as String,
       batchCount: json['batchCount'] as int,
-      logoAsset: json['logoAsset'] as String,
-      bannerAsset: json['bannerAsset'] as String,
     );
   }
 }

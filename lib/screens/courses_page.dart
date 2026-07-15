@@ -1,15 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../models/dashboard_content.dart';
-import 'course_detail_page.dart';
+import '../models/user_access_models.dart';
+import '../state/session_state.dart';
+import '../widgets/inline_search_field.dart';
+import 'subject_page.dart';
 
-class CoursesPage extends StatelessWidget {
-  const CoursesPage({super.key, required this.courses});
+class CoursesPage extends StatefulWidget {
+  const CoursesPage({super.key});
 
-  final List<CourseItem> courses;
+  @override
+  State<CoursesPage> createState() => _CoursesPageState();
+}
+
+class _CoursesPageState extends State<CoursesPage> {
+  String _query = '';
 
   @override
   Widget build(BuildContext context) {
+    final session = context.watch<SessionState>();
+    final courses = session.courses
+        .where(
+          (course) => course.courseName.toLowerCase().contains(
+            _query.trim().toLowerCase(),
+          ),
+        )
+        .toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6EE),
       appBar: AppBar(
@@ -18,93 +35,89 @@ class CoursesPage extends StatelessWidget {
         elevation: 0,
         title: const Text('All Courses'),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: courses.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 14),
-        itemBuilder: (context, index) {
-          final course = courses[index];
-          return InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => CourseDetailPage(course: course),
-                ),
-              );
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: const Color(0xFFFFDDBF)),
-              ),
-              child: Column(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(22),
-                    ),
-                    child: Image.asset(
-                      course.thumbnailAsset,
-                      height: 150,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                course.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF3A1E0B),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                '${course.lessons} lessons • ${course.duration}',
-                                style: const TextStyle(
-                                  color: Color(0xFF7B5B43),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
+      body: RefreshIndicator(
+        onRefresh: () => context.read<SessionState>().refreshCourses(),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            InlineSearchField(
+              hintText: 'Search courses',
+              onChanged: (value) => setState(() => _query = value),
+            ),
+            const SizedBox(height: 14),
+            if (courses.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 40),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        session.errorMessage ?? 'No courses found.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Color(0xFF6E4D37)),
+                      ),
+                      if (session.errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        ElevatedButton(
+                          onPressed: () =>
+                              context.read<SessionState>().refreshCourses(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF97316),
+                            foregroundColor: Colors.white,
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE6D2),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            '\$${course.salePrice.toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              color: Color(0xFFF97316),
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
+                          child: const Text('Retry'),
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              )
+            else
+              ...courses.map((course) => _CourseCard(course: course)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CourseCard extends StatelessWidget {
+  const _CourseCard({required this.course});
+
+  final UserCourse course;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFFFDDBF)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(14),
+        title: Text(
+          course.courseName,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF3A1E0B),
+          ),
+        ),
+        subtitle: Text(
+          '${course.subjects.length} subjects • ${course.chapterCount} chapters',
+          style: const TextStyle(
+            color: Color(0xFF7B5B43),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        trailing: const Icon(Icons.arrow_forward_rounded),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => SubjectPage(course: course)),
           );
         },
       ),

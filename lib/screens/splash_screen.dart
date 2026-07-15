@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../state/session_state.dart';
+import '../widgets/app_logo.dart';
 import 'login_page.dart';
+import 'root_shell.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,14 +17,24 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () {
-      if (!mounted) {
-        return;
-      }
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const LoginPage()));
-    });
+    _bootstrap();
+  }
+
+  Future<void> _bootstrap() async {
+    final session = context.read<SessionState>();
+    await Future.wait([
+      session.restoreSession(),
+      Future.delayed(const Duration(seconds: 3)),
+    ]);
+    if (!mounted) {
+      return;
+    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) =>
+            session.isAuthenticated ? const RootShell() : const LoginPage(),
+      ),
+    );
   }
 
   @override
@@ -38,14 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ClipOval(
-                child: Image.asset(
-                  'assets/images/tks_academy_logo.png',
-                  width: 120,
-                  height: 120,
-                  fit: BoxFit.cover,
-                ),
-              ),
+              const AppLogo(size: 140),
               const SizedBox(height: 24),
               Text(
                 'TKS Academy',

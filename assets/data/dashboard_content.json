@@ -1,11 +1,9 @@
 {
   "school": {
     "name": "TKS Academy",
-    "location": "Sector 62, Noida",
+    "location": "Tamil Nadu, India",
     "status": "Active",
-    "batchCount": 12,
-    "logoAsset": "assets/images/tks_academy_logo.png",
-    "bannerAsset": "assets/images/tks_campus_banner.png"
+    "batchCount": 12
   },
   "resources": [
     {
