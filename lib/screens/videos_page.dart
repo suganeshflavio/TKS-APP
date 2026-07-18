@@ -50,6 +50,12 @@ class _VideosPageState extends State<VideosPage> {
     setState(() => _future = _load());
   }
 
+  void _openVideo(VideoLesson video) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => VideoPlayerPage(video: video)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,9 +96,7 @@ class _VideosPageState extends State<VideosPage> {
                             Text(
                               message,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Color(0xFF6E4D37),
-                              ),
+                              style: const TextStyle(color: Color(0xFF6E4D37)),
                             ),
                             const SizedBox(height: 12),
                             ElevatedButton(
@@ -125,53 +129,43 @@ class _VideosPageState extends State<VideosPage> {
                       );
                     }
 
-                    return ListView.separated(
-                      itemCount: videos.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final video = videos[index];
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: const Color(0xFFFFDDBF),
+                    final notedVideos = videos
+                        .where((video) => video.hasNotes)
+                        .toList();
+
+                    return ListView(
+                      children: [
+                        ...videos.map(
+                          (video) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _VideoTile(
+                              video: video,
+                              onTap: () => _openVideo(video),
                             ),
                           ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
+                        ),
+                        if (notedVideos.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Notes',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF3A1E0B),
                             ),
-                            leading: const CircleAvatar(
-                              backgroundColor: Color(0xFFFFE6D2),
-                              child: Icon(
-                                Icons.play_arrow_rounded,
-                                color: Color(0xFFF97316),
-                              ),
-                            ),
-                            title: Text(
-                              video.videoName,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF3A1E0B),
-                              ),
-                            ),
-                            subtitle: Text(video.subject),
-                            trailing: const Icon(Icons.arrow_forward_rounded),
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      VideoPlayerPage(video: video),
-                                ),
-                              );
-                            },
                           ),
-                        );
-                      },
+                          const SizedBox(height: 10),
+                          ...notedVideos.map(
+                            (video) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _NoteTile(
+                                video: video,
+                                onTap: () => _openVideo(video),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     );
                   },
                 ),
@@ -179,6 +173,80 @@ class _VideosPageState extends State<VideosPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _VideoTile extends StatelessWidget {
+  const _VideoTile({required this.video, required this.onTap});
+
+  final VideoLesson video;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFFFDDBF)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: const CircleAvatar(
+          backgroundColor: Color(0xFFFFE6D2),
+          child: Icon(Icons.play_arrow_rounded, color: Color(0xFFF97316)),
+        ),
+        title: Text(
+          video.videoName,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF3A1E0B),
+          ),
+        ),
+        subtitle: Text(video.subject),
+        trailing: const Icon(Icons.arrow_forward_rounded),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _NoteTile extends StatelessWidget {
+  const _NoteTile({required this.video, required this.onTap});
+
+  final VideoLesson video;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFFFDDBF)),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: const CircleAvatar(
+          backgroundColor: Color(0xFFFFE6D2),
+          child: Icon(Icons.description_rounded, color: Color(0xFFF97316)),
+        ),
+        title: Text(
+          video.videoName,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF3A1E0B),
+          ),
+        ),
+        subtitle: const Text('Tap to view notes'),
+        trailing: const Icon(Icons.arrow_forward_rounded),
+        onTap: onTap,
       ),
     );
   }

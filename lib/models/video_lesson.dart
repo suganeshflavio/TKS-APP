@@ -9,12 +9,11 @@ class VideosResponse {
   final String message;
   final VideosData data;
 
-  factory VideosResponse.fromJson(Map<String, dynamic> json) =>
-      VideosResponse(
-        success: json['success'] as bool,
-        message: json['message'] as String,
-        data: VideosData.fromJson(json['data'] as Map<String, dynamic>),
-      );
+  factory VideosResponse.fromJson(Map<String, dynamic> json) => VideosResponse(
+    success: json['success'] as bool,
+    message: json['message'] as String,
+    data: VideosData.fromJson(json['data'] as Map<String, dynamic>),
+  );
 }
 
 class VideosData {
@@ -49,11 +48,10 @@ class VideoCourseRef {
   final String id;
   final String courseName;
 
-  factory VideoCourseRef.fromJson(Map<String, dynamic> json) =>
-      VideoCourseRef(
-        id: json['id'] as String,
-        courseName: json['courseName'] as String,
-      );
+  factory VideoCourseRef.fromJson(Map<String, dynamic> json) => VideoCourseRef(
+    id: json['id'] as String,
+    courseName: json['courseName'] as String,
+  );
 }
 
 class VideoLesson {
@@ -70,6 +68,7 @@ class VideoLesson {
     required this.isPreview,
     this.duration,
     this.course,
+    this.notesUrl,
   });
 
   final String id;
@@ -84,6 +83,9 @@ class VideoLesson {
   final bool isActive;
   final bool isPreview;
   final VideoCourseRef? course;
+  final String? notesUrl;
+
+  bool get hasNotes => notesUrl != null && notesUrl!.isNotEmpty;
 
   factory VideoLesson.fromJson(Map<String, dynamic> json) => VideoLesson(
     id: json['id'] as String,
@@ -100,5 +102,6 @@ class VideoLesson {
     course: json['course'] == null
         ? null
         : VideoCourseRef.fromJson(json['course'] as Map<String, dynamic>),
+    notesUrl: json['notesUrl'] as String?,
   );
 }

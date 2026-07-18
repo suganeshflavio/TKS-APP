@@ -5,6 +5,7 @@ import '../models/dashboard_content.dart';
 import '../repositories/dashboard_repository.dart';
 import '../state/session_state.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/banner_carousel.dart';
 import '../widgets/brand_title.dart';
 import 'courses_page.dart';
 import 'subject_page.dart';
@@ -88,6 +89,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           value: '${content.school.batchCount}',
                         ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  const BannerCarousel(
+                    imagePaths: [
+                      'assets/images/tks-banner1.jpg',
+                      'assets/images/tks-banner2.jpg',
                     ],
                   ),
                   const SizedBox(height: 20),

@@ -40,6 +40,7 @@ dependencies:
   flutter_secure_storage: ^10.3.1
   flutter_dotenv: ^6.0.1
   device_info_plus: ^13.2.0
+  webview_flutter: ^4.14.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -50,6 +51,22 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  image: ^4.9.1
+  flutter_native_splash: ^2.4.8
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/tks_academy_logo.png"
+  remove_alpha_ios: true
+
+flutter_native_splash:
+  color: "#FFF8F0"
+  image: assets/images/tks_academy_logo.png
+  android_12:
+    image: assets/images/tks_academy_logo.png
+    color: "#FFF8F0"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
