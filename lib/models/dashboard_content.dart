@@ -38,24 +38,15 @@ class DashboardContent {
 }
 
 class SchoolProfile {
-  const SchoolProfile({
-    required this.name,
-    required this.location,
-    required this.status,
-    required this.batchCount,
-  });
+  const SchoolProfile({required this.name, required this.location});
 
   final String name;
   final String location;
-  final String status;
-  final int batchCount;
 
   factory SchoolProfile.fromJson(Map<String, dynamic> json) {
     return SchoolProfile(
       name: json['name'] as String,
       location: json['location'] as String,
-      status: json['status'] as String,
-      batchCount: json['batchCount'] as int,
     );
   }
 }

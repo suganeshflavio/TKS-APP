@@ -7,12 +7,14 @@ class VideosResponse {
 
   final bool success;
   final String message;
-  final VideosData data;
+  final VideosData? data;
 
   factory VideosResponse.fromJson(Map<String, dynamic> json) => VideosResponse(
-    success: json['success'] as bool,
-    message: json['message'] as String,
-    data: VideosData.fromJson(json['data'] as Map<String, dynamic>),
+    success: json['success'] as bool? ?? false,
+    message: json['message'] as String? ?? 'Unable to load videos.',
+    data: json['data'] == null
+        ? null
+        : VideosData.fromJson(json['data'] as Map<String, dynamic>),
   );
 }
 
@@ -32,9 +34,11 @@ class VideosData {
   final int totalPages;
 
   factory VideosData.fromJson(Map<String, dynamic> json) => VideosData(
-    videos: (json['videos'] as List<dynamic>)
-        .map((e) => VideoLesson.fromJson(e as Map<String, dynamic>))
-        .toList(),
+    videos:
+        (json['videos'] as List<dynamic>?)
+            ?.map((e) => VideoLesson.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        [],
     total: (json['total'] as num?)?.toInt() ?? 0,
     page: (json['page'] as num?)?.toInt() ?? 1,
     limit: (json['limit'] as num?)?.toInt() ?? 0,
@@ -49,8 +53,8 @@ class VideoCourseRef {
   final String courseName;
 
   factory VideoCourseRef.fromJson(Map<String, dynamic> json) => VideoCourseRef(
-    id: json['id'] as String,
-    courseName: json['courseName'] as String,
+    id: json['id'] as String? ?? '',
+    courseName: json['courseName'] as String? ?? '',
   );
 }
 
@@ -61,7 +65,7 @@ class VideoLesson {
     required this.subject,
     required this.chapter,
     required this.videoName,
-    required this.youtubeUrl,
+    required this.videoUrl,
     required this.description,
     required this.order,
     required this.isActive,
@@ -76,7 +80,7 @@ class VideoLesson {
   final String subject;
   final String chapter;
   final String videoName;
-  final String youtubeUrl;
+  final String videoUrl;
   final String description;
   final dynamic duration;
   final int order;
@@ -88,12 +92,12 @@ class VideoLesson {
   bool get hasNotes => notesUrl != null && notesUrl!.isNotEmpty;
 
   factory VideoLesson.fromJson(Map<String, dynamic> json) => VideoLesson(
-    id: json['id'] as String,
-    courseId: json['courseId'] as String,
-    subject: json['subject'] as String,
-    chapter: json['chapter'] as String,
-    videoName: json['videoName'] as String,
-    youtubeUrl: json['youtubeUrl'] as String,
+    id: json['id'] as String? ?? '',
+    courseId: json['courseId'] as String? ?? '',
+    subject: json['subject'] as String? ?? '',
+    chapter: json['chapter'] as String? ?? '',
+    videoName: json['videoName'] as String? ?? 'Untitled video',
+    videoUrl: json['videoUrl'] as String? ?? '',
     description: json['description'] as String? ?? '',
     duration: json['duration'],
     order: (json['order'] as num?)?.toInt() ?? 0,

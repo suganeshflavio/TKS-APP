@@ -1,16 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class NotesViewer extends StatefulWidget {
+import 'pdf_viewer.dart';
+
+/// Renders a note/attachment for a video. PDFs use the native
+/// [PdfViewer] (flutter_pdfview); other office formats (PPT/DOC/XLS, etc.)
+/// fall back to an embedded web viewer since there's no native Flutter
+/// renderer for those.
+class NotesViewer extends StatelessWidget {
   const NotesViewer({super.key, required this.notesUrl});
 
   final String notesUrl;
 
   @override
-  State<NotesViewer> createState() => _NotesViewerState();
+  Widget build(BuildContext context) {
+    final extension = Uri.parse(notesUrl).path.split('.').last.toLowerCase();
+    if (extension == 'pdf') {
+      return PdfViewer(url: notesUrl);
+    }
+    return _OfficeDocumentViewer(notesUrl: notesUrl);
+  }
 }
 
-class _NotesViewerState extends State<NotesViewer> {
+class _OfficeDocumentViewer extends StatefulWidget {
+  const _OfficeDocumentViewer({required this.notesUrl});
+
+  final String notesUrl;
+
+  @override
+  State<_OfficeDocumentViewer> createState() => _OfficeDocumentViewerState();
+}
+
+class _OfficeDocumentViewerState extends State<_OfficeDocumentViewer> {
   late final WebViewController _controller;
   bool _isLoading = true;
 
@@ -23,6 +44,13 @@ class _NotesViewerState extends State<NotesViewer> {
       ..enableZoom(true)
       ..setNavigationDelegate(
         NavigationDelegate(
+          onNavigationRequest: (request) {
+            final host = Uri.tryParse(request.url)?.host ?? '';
+            final isBlocked = _blockedHosts.any(host.contains);
+            return isBlocked
+                ? NavigationDecision.prevent
+                : NavigationDecision.navigate;
+          },
           onPageFinished: (_) async {
             await _controller.runJavaScript(_cleanupScript);
             if (mounted) setState(() => _isLoading = false);
@@ -83,6 +111,11 @@ const _cleanupScript = '''
   });
 })();
 ''';
+
+// Google's viewer can otherwise redirect into a full sign-in flow or a
+// Drive file browser; blocking these hosts keeps the WebView confined to
+// the document preview itself.
+const _blockedHosts = ['accounts.google.com', 'drive.google.com'];
 
 const _officeExtensions = {'ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx'};
 

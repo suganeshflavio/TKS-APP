@@ -1,9 +1,7 @@
 {
   "school": {
     "name": "TKS Academy",
-    "location": "Tamil Nadu, India",
-    "status": "Active",
-    "batchCount": 12
+    "location": "Tamil Nadu, India"
   },
   "resources": [
     {

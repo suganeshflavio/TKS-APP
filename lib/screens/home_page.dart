@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/network/api_client.dart';
 import '../models/dashboard_content.dart';
+import '../models/testimonial.dart';
 import '../repositories/dashboard_repository.dart';
+import '../repositories/testimonial_repository.dart';
 import '../state/session_state.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/brand_title.dart';
+import '../widgets/reviews_carousel.dart';
 import 'courses_page.dart';
 import 'subject_page.dart';
 
@@ -19,11 +23,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   late final Future<DashboardContent> _dashboardFuture;
+  late Future<List<Testimonial>> _testimonialsFuture;
+  final _testimonialRepository = TestimonialRepository(ApiClient());
 
   @override
   void initState() {
     super.initState();
     _dashboardFuture = DashboardRepository().load();
+    _testimonialsFuture = _testimonialRepository.fetchPublicTestimonials();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -36,8 +43,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      context.read<SessionState>().refreshCourses();
+      _refresh();
     }
+  }
+
+  Future<void> _refresh() async {
+    final coursesFuture = context.read<SessionState>().refreshCourses();
+    final testimonialsFuture = _testimonialRepository.fetchPublicTestimonials();
+    setState(() {
+      _testimonialsFuture = testimonialsFuture;
+    });
+    await Future.wait([coursesFuture, testimonialsFuture]);
   }
 
   @override
@@ -67,31 +83,40 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
           return SafeArea(
             child: RefreshIndicator(
-              onRefresh: () => context.read<SessionState>().refreshCourses(),
+              onRefresh: _refresh,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 children: [
                   _SchoolBannerCard(school: content.school),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          label: 'Status',
-                          value: content.school.status,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _StatCard(
-                          label: 'Batches',
-                          value: '${content.school.batchCount}',
-                        ),
-                      ),
-                    ],
+                  FutureBuilder<List<Testimonial>>(
+                    future: _testimonialsFuture,
+                    builder: (context, testimonialSnapshot) {
+                      final testimonials = testimonialSnapshot.data ?? [];
+                      if (testimonialSnapshot.connectionState !=
+                              ConnectionState.done ||
+                          testimonials.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Testimonials',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF3A1E0B),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          ReviewsCarousel(testimonials: testimonials),
+                          const SizedBox(height: 20),
+                        ],
+                      );
+                    },
                   ),
-                  const SizedBox(height: 20),
                   const BannerCarousel(
                     imagePaths: [
                       'assets/images/tks-banner1.jpg',
@@ -215,46 +240,6 @@ class _SchoolBannerCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFDDBF)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFFA3734F),
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Color(0xFF3A1E0B),
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -88,7 +88,7 @@ class _VideosPageState extends State<VideosPage> {
                     if (snapshot.hasError) {
                       final message = snapshot.error is ApiException
                           ? (snapshot.error as ApiException).message
-                          : 'Unable to load videos.';
+                          : 'Unable to load videos: ${snapshot.error}';
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
