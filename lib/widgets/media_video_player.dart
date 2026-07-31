@@ -298,7 +298,8 @@ class _VideoSurface extends StatelessWidget {
         children: [
           VideoPlayer(controller),
           if (controlsVisible)
-            Center(
+            Align(
+              alignment: const Alignment(0, -0.25),
               child: IconButton(
                 iconSize: 56,
                 color: Colors.white,
@@ -316,7 +317,12 @@ class _VideoSurface extends StatelessWidget {
               right: 0,
               bottom: 0,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.only(
+                  left: 10,
+                  right: 6,
+                  bottom: 4,
+                  top: 14,
+                ),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -324,100 +330,115 @@ class _VideoSurface extends StatelessWidget {
                     colors: [Colors.transparent, Colors.black87],
                   ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          _formatDuration(position),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Expanded(
-                          child: SliderTheme(
-                            data: SliderTheme.of(context).copyWith(
-                              trackHeight: 2,
-                              thumbShape: const RoundSliderThumbShape(
-                                enabledThumbRadius: 6,
-                              ),
-                              overlayShape: const RoundSliderOverlayShape(
-                                overlayRadius: 12,
-                              ),
-                              activeTrackColor: const Color(0xFFF97316),
-                              thumbColor: const Color(0xFFF97316),
-                              inactiveTrackColor: Colors.white30,
-                            ),
-                            child: Slider(
-                              min: 0,
-                              max: sliderMax,
-                              value: sliderValue,
-                              onChanged: (v) => controller.seekTo(
-                                Duration(milliseconds: v.round()),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          _formatDuration(duration),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      _formatDuration(position),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        PopupMenuButton<double>(
-                          initialValue: speed,
-                          onSelected: onSpeedChanged,
-                          color: Colors.black87,
-                          itemBuilder: (context) => _speedOptions
-                              .map(
-                                (s) => PopupMenuItem<double>(
-                                  value: s,
-                                  child: Text(
-                                    _formatSpeed(s),
-                                    style: TextStyle(
-                                      color: s == speed
-                                          ? const Color(0xFFF97316)
-                                          : Colors.white,
-                                      fontWeight: s == speed
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 3,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 6,
+                          ),
+                          overlayShape: const RoundSliderOverlayShape(
+                            overlayRadius: 10,
+                          ),
+                          activeTrackColor: const Color(0xFFF97316),
+                          thumbColor: const Color(0xFFF97316),
+                          inactiveTrackColor: Colors.white30,
+                        ),
+                        child: Slider(
+                          min: 0,
+                          max: sliderMax,
+                          value: sliderValue,
+                          onChanged: (v) => controller.seekTo(
+                            Duration(milliseconds: v.round()),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      _formatDuration(duration),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    PopupMenuButton<double>(
+                      initialValue: speed,
+                      onSelected: onSpeedChanged,
+                      color: const Color(0xFF2A180E),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      itemBuilder: (context) => _speedOptions
+                          .map(
+                            (s) => PopupMenuItem<double>(
+                              value: s,
+                              child: Text(
+                                _formatSpeed(s),
+                                style: TextStyle(
+                                  color: s == speed
+                                      ? const Color(0xFFF97316)
+                                      : Colors.white,
+                                  fontWeight: s == speed
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                                 ),
-                              )
-                              .toList(),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 6,
+                              ),
                             ),
-                            child: Text(
+                          )
+                          .toList(),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white12,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.speed_rounded,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
                               _formatSpeed(speed),
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                        IconButton(
-                          color: Colors.white,
-                          icon: Icon(
-                            isFullscreen
-                                ? Icons.fullscreen_exit_rounded
-                                : Icons.fullscreen_rounded,
-                          ),
-                          onPressed: onFullscreenToggle,
-                        ),
-                      ],
+                      ),
+                    ),
+                    IconButton(
+                      constraints: const BoxConstraints(),
+                      padding: const EdgeInsets.all(6),
+                      color: Colors.white,
+                      iconSize: 20,
+                      icon: Icon(
+                        isFullscreen
+                            ? Icons.fullscreen_exit_rounded
+                            : Icons.fullscreen_rounded,
+                      ),
+                      onPressed: onFullscreenToggle,
                     ),
                   ],
                 ),

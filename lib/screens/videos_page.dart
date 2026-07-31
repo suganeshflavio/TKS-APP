@@ -50,10 +50,15 @@ class _VideosPageState extends State<VideosPage> {
     setState(() => _future = _load());
   }
 
-  void _openVideo(VideoLesson video) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => VideoPlayerPage(video: video)));
+  void _openVideo(VideoLesson video, {bool autoShowNotes = false}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => VideoPlayerPage(
+          video: video,
+          autoShowNotes: autoShowNotes,
+        ),
+      ),
+    );
   }
 
   @override
@@ -160,7 +165,7 @@ class _VideosPageState extends State<VideosPage> {
                               padding: const EdgeInsets.only(bottom: 12),
                               child: _NoteTile(
                                 video: video,
-                                onTap: () => _openVideo(video),
+                                onTap: () => _openVideo(video, autoShowNotes: true),
                               ),
                             ),
                           ),
@@ -236,7 +241,7 @@ class _NoteTile extends StatelessWidget {
           child: Icon(Icons.description_rounded, color: Color(0xFFF97316)),
         ),
         title: Text(
-          video.videoName,
+          video.displayNotesFileName,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -244,7 +249,12 @@ class _NoteTile extends StatelessWidget {
             color: Color(0xFF3A1E0B),
           ),
         ),
-        subtitle: const Text('Tap to view notes'),
+        subtitle: Text(
+          video.videoName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: Color(0xFF8F6A4D)),
+        ),
         trailing: const Icon(Icons.arrow_forward_rounded),
         onTap: onTap,
       ),

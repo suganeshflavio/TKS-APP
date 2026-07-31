@@ -6,16 +6,27 @@ import '../widgets/media_video_player.dart';
 import '../widgets/notes_viewer.dart';
 
 class VideoPlayerPage extends StatefulWidget {
-  const VideoPlayerPage({super.key, required this.video});
+  const VideoPlayerPage({
+    super.key,
+    required this.video,
+    this.autoShowNotes = false,
+  });
 
   final VideoLesson video;
+  final bool autoShowNotes;
 
   @override
   State<VideoPlayerPage> createState() => _VideoPlayerPageState();
 }
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
-  bool _showNotes = false;
+  late bool _showNotes;
+
+  @override
+  void initState() {
+    super.initState();
+    _showNotes = widget.autoShowNotes;
+  }
 
   void _toggleNotes() => setState(() => _showNotes = !_showNotes);
 
@@ -56,61 +67,61 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                     ),
                   ),
           ),
-          // Fixed: short metadata block (bounded so it can't crowd out
-          // Notes/Comments below, regardless of description length).
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  video.videoName,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF3A1E0B),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${video.subject} • ${video.chapter}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF8F6A4D),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  video.description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    height: 1.4,
-                    color: Color(0xFF6F4F39),
-                  ),
-                ),
-                if (video.hasNotes && !_showNotes) ...[
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _toggleNotes,
-                      icon: const Icon(Icons.description_rounded),
-                      label: const Text('View Notes'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFFF97316),
-                        side: const BorderSide(color: Color(0xFFF97316)),
-                        minimumSize: const Size.fromHeight(44),
-                      ),
+          // Metadata section: hidden when notes view is active
+          if (!_showNotes)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    video.videoName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF3A1E0B),
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${video.subject} • ${video.chapter}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF8F6A4D),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    video.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.4,
+                      color: Color(0xFF6F4F39),
+                    ),
+                  ),
+                  if (video.hasNotes) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _toggleNotes,
+                        icon: const Icon(Icons.description_rounded),
+                        label: const Text('View Notes'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFF97316),
+                          side: const BorderSide(color: Color(0xFFF97316)),
+                          minimumSize: const Size.fromHeight(44),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
           const SizedBox(height: 8),
           // Flexible: Notes and Comments take turns owning all of the
           // remaining space — opening one fully replaces the other.

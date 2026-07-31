@@ -73,6 +73,7 @@ class VideoLesson {
     this.duration,
     this.course,
     this.notesUrl,
+    this.notesFileName,
   });
 
   final String id;
@@ -88,8 +89,24 @@ class VideoLesson {
   final bool isPreview;
   final VideoCourseRef? course;
   final String? notesUrl;
+  final String? notesFileName;
 
   bool get hasNotes => notesUrl != null && notesUrl!.isNotEmpty;
+
+  String get displayNotesFileName {
+    if (notesFileName != null && notesFileName!.isNotEmpty) {
+      return notesFileName!;
+    }
+    if (notesUrl != null && notesUrl!.isNotEmpty) {
+      final uri = Uri.tryParse(notesUrl!);
+      if (uri != null && uri.pathSegments.isNotEmpty) {
+        final rawName = uri.pathSegments.last;
+        final decoded = Uri.decodeComponent(rawName);
+        if (decoded.isNotEmpty) return decoded;
+      }
+    }
+    return '$videoName Notes';
+  }
 
   factory VideoLesson.fromJson(Map<String, dynamic> json) => VideoLesson(
     id: json['id'] as String? ?? '',
@@ -107,5 +124,6 @@ class VideoLesson {
         ? null
         : VideoCourseRef.fromJson(json['course'] as Map<String, dynamic>),
     notesUrl: json['notesUrl'] as String?,
+    notesFileName: json['notesFileName'] as String?,
   );
 }
