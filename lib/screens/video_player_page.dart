@@ -92,7 +92,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                     color: Color(0xFF6F4F39),
                   ),
                 ),
-                if (video.hasNotes) ...[
+                if (video.hasNotes && !_showNotes) ...[
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,

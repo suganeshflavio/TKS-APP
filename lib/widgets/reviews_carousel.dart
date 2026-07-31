@@ -126,27 +126,6 @@ class _ReviewsCarouselState extends State<ReviewsCarousel> {
             },
           ),
         ),
-        if (widget.testimonials.length > 1) ...[
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(widget.testimonials.length, (index) {
-              final isActive = index == _currentPage;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                width: isActive ? 20 : 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? const Color(0xFFF97316)
-                      : const Color(0xFFFFDDBF),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              );
-            }),
-          ),
-        ],
       ],
     );
   }

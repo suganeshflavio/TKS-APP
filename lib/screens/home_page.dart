@@ -90,40 +90,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 children: [
                   _SchoolBannerCard(school: content.school),
                   const SizedBox(height: 16),
-                  FutureBuilder<List<Testimonial>>(
-                    future: _testimonialsFuture,
-                    builder: (context, testimonialSnapshot) {
-                      final testimonials = testimonialSnapshot.data ?? [];
-                      if (testimonialSnapshot.connectionState !=
-                              ConnectionState.done ||
-                          testimonials.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Testimonials',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF3A1E0B),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          ReviewsCarousel(testimonials: testimonials),
-                          const SizedBox(height: 20),
-                        ],
-                      );
-                    },
-                  ),
-                  const BannerCarousel(
-                    imagePaths: [
-                      'assets/images/tks-banner1.jpg',
-                      'assets/images/tks-banner2.jpg',
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                  if (courses.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 28),
+                      child: Center(
+                        child: Text(
+                          'No courses found.',
+                          style: TextStyle(color: Color(0xFF6E4D37)),
+                        ),
+                      ),
+                    )
+                  else ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -184,6 +161,41 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       ),
                     );
                   }),
+                  ],
+                  const SizedBox(height: 10),
+                  const BannerCarousel(
+                    imagePaths: [
+                      'assets/images/tks-banner1.jpg',
+                      'assets/images/tks-banner2.jpg',
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  FutureBuilder<List<Testimonial>>(
+                    future: _testimonialsFuture,
+                    builder: (context, testimonialSnapshot) {
+                      final testimonials = testimonialSnapshot.data ?? [];
+                      if (testimonialSnapshot.connectionState !=
+                              ConnectionState.done ||
+                          testimonials.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Testimonials',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF3A1E0B),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          ReviewsCarousel(testimonials: testimonials),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
