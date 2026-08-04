@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'skeleton.dart';
+
 class PdfViewer extends StatefulWidget {
   const PdfViewer({super.key, required this.url});
 
@@ -51,7 +53,7 @@ class _PdfViewerState extends State<PdfViewer> {
           future: _filePathFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
+              return const DocumentSkeleton();
             }
 
             if (snapshot.hasError || !snapshot.hasData) {
@@ -83,8 +85,9 @@ class _PdfViewerState extends State<PdfViewer> {
               swipeHorizontal: false,
               autoSpacing: true,
               pageFling: true,
-              pageSnap: true,
-              fitPolicy: FitPolicy.BOTH,
+              onError: (error) {
+                debugPrint('PDFView error: $error');
+              },
             );
           },
         ),

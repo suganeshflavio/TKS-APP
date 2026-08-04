@@ -11,6 +11,7 @@ import '../widgets/app_logo.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/brand_title.dart';
 import '../widgets/reviews_carousel.dart';
+import '../widgets/skeleton.dart';
 import 'courses_page.dart';
 import 'subject_page.dart';
 
@@ -22,9 +23,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
-  late final Future<DashboardContent> _dashboardFuture;
+  late Future<DashboardContent> _dashboardFuture;
   late Future<List<Testimonial>> _testimonialsFuture;
   final _testimonialRepository = TestimonialRepository(ApiClient());
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -48,17 +50,46 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   Future<void> _refresh() async {
+    final dashboardFuture = DashboardRepository().load();
+    final testimonialsFuture =
+        _testimonialRepository.fetchPublicTestimonials();
     final coursesFuture = context.read<SessionState>().refreshCourses();
-    final testimonialsFuture = _testimonialRepository.fetchPublicTestimonials();
+
     setState(() {
+      _isRefreshing = true;
+      _dashboardFuture = dashboardFuture;
       _testimonialsFuture = testimonialsFuture;
     });
-    await Future.wait([coursesFuture, testimonialsFuture]);
+
+    try {
+      await Future.wait([
+        dashboardFuture.catchError(
+          (_) => const DashboardContent(
+            school: SchoolProfile(name: '', location: ''),
+            resources: [],
+            tests: [],
+            progress: [],
+            videos: [],
+            courses: [],
+          ),
+        ),
+        testimonialsFuture.catchError((_) => <Testimonial>[]),
+        coursesFuture.catchError((_) {}),
+      ]);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final courses = context.watch<SessionState>().courses;
+    final session = context.watch<SessionState>();
+    final courses = session.courses;
+    final isLoadingCourses = session.isLoadingCourses;
     final fewCourses = courses.take(2).toList();
 
     return Scaffold(
@@ -66,15 +97,30 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       body: FutureBuilder<DashboardContent>(
         future: _dashboardFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
+          if (_isRefreshing ||
+              snapshot.connectionState != ConnectionState.done) {
+            return RefreshIndicator(
+              onRefresh: _refresh,
+              child: const DashboardSkeleton(),
+            );
           }
 
           if (snapshot.hasError || !snapshot.hasData) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Unable to load dashboard content.'),
+            return SafeArea(
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  children: const [
+                    SizedBox(height: 120),
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text('Unable to load dashboard content.'),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -90,7 +136,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 children: [
                   _SchoolBannerCard(school: content.school),
                   const SizedBox(height: 16),
-                  if (courses.isEmpty)
+                  if (isLoadingCourses)
+                    const CourseSectionSkeleton()
+                  else if (courses.isEmpty)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 28),
                       child: Center(
@@ -101,66 +149,66 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       ),
                     )
                   else ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Course',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF3A1E0B),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const CoursesPage(),
-                            ),
-                          );
-                        },
-                        child: const Text('See all'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  ...fewCourses.map((course) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: const Color(0xFFFFDDBF)),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        title: Text(
-                          course.courseName,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Course',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
                             color: Color(0xFF3A1E0B),
                           ),
                         ),
-                        subtitle: Text(
-                          '${course.subjects.length} subjects • ${course.chapterCount} chapters',
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const CoursesPage(),
+                              ),
+                            );
+                          },
+                          child: const Text('See all'),
                         ),
-                        trailing: const Icon(Icons.arrow_forward_rounded),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => SubjectPage(course: course),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    ...fewCourses.map((course) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFFFFDDBF)),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          title: Text(
+                            course.courseName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF3A1E0B),
                             ),
-                          );
-                        },
-                      ),
-                    );
-                  }),
+                          ),
+                          subtitle: Text(
+                            '${course.subjects.length} subjects • ${course.chapterCount} chapters',
+                          ),
+                          trailing: const Icon(Icons.arrow_forward_rounded),
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => SubjectPage(course: course),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }),
                   ],
                   const SizedBox(height: 10),
                   const BannerCarousel(
@@ -173,10 +221,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   FutureBuilder<List<Testimonial>>(
                     future: _testimonialsFuture,
                     builder: (context, testimonialSnapshot) {
-                      final testimonials = testimonialSnapshot.data ?? [];
                       if (testimonialSnapshot.connectionState !=
-                              ConnectionState.done ||
-                          testimonials.isEmpty) {
+                          ConnectionState.done) {
+                        return const TestimonialSectionSkeleton();
+                      }
+                      final testimonials = testimonialSnapshot.data ?? [];
+                      if (testimonials.isEmpty) {
                         return const SizedBox.shrink();
                       }
                       return Column(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'pdf_viewer.dart';
+import 'skeleton.dart';
 
 /// Renders a note/attachment for a video. PDFs use the native
 /// [PdfViewer] (flutter_pdfview); other office formats (PPT/DOC/XLS, etc.)
@@ -38,19 +39,14 @@ class _OfficeDocumentViewerState extends State<_OfficeDocumentViewer> {
   @override
   void initState() {
     super.initState();
-    final viewerUrl = _buildViewerUrl(widget.notesUrl);
+
+    final viewerUrl =
+        'https://docs.google.com/gview?embedded=true&url=${Uri.encodeComponent(widget.notesUrl)}';
+
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..enableZoom(true)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onNavigationRequest: (request) {
-            final host = Uri.tryParse(request.url)?.host ?? '';
-            final isBlocked = _blockedHosts.any(host.contains);
-            return isBlocked
-                ? NavigationDecision.prevent
-                : NavigationDecision.navigate;
-          },
           onPageFinished: (_) async {
             await _controller.runJavaScript(_cleanupScript);
             if (mounted) setState(() => _isLoading = false);
@@ -73,7 +69,7 @@ class _OfficeDocumentViewerState extends State<_OfficeDocumentViewer> {
         child: Stack(
           children: [
             SizedBox.expand(child: WebViewWidget(controller: _controller)),
-            if (_isLoading) const Center(child: CircularProgressIndicator()),
+            if (_isLoading) const DocumentSkeleton(),
           ],
         ),
       ),
@@ -89,42 +85,19 @@ const _cleanupScript = '''
   document.body.style.overflow = 'auto';
   document.body.style.webkitOverflowScrolling = 'touch';
 
-  var viewport = document.querySelector('meta[name="viewport"]');
-  if (viewport) {
-    viewport.setAttribute(
-      'content',
-      'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes'
-    );
-  }
+  var header = document.querySelector('.ndfHFb-c4325c-HcW0Tw-Lg2Whd');
+  if (header) header.style.display = 'none';
 
-  var selectors = [
-    '[title*="Sign in" i]', '[aria-label*="Sign in" i]',
-    '[title*="Print" i]', '[aria-label*="Print" i]',
-    '[title*="Download" i]', '[aria-label*="Download" i]',
-    '[title*="Edit" i]', '[aria-label*="Edit" i]',
-    '[title*="Share" i]', '[aria-label*="Share" i]'
-  ];
-  selectors.forEach(function(sel) {
-    document.querySelectorAll(sel).forEach(function(el) {
-      el.style.display = 'none';
-    });
-  });
+  var topBar = document.querySelector('.ndfHFb-c4325c-HzV7m-pbAoWc');
+  if (topBar) topBar.style.display = 'none';
+
+  var popout = document.querySelector('.ndfHFb-c4325c-J8mB1c-BPrWId');
+  if (popout) popout.style.display = 'none';
+
+  var iframe = document.querySelector('iframe');
+  if (iframe) {
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+  }
 })();
 ''';
-
-// Google's viewer can otherwise redirect into a full sign-in flow or a
-// Drive file browser; blocking these hosts keeps the WebView confined to
-// the document preview itself.
-const _blockedHosts = ['accounts.google.com', 'drive.google.com'];
-
-const _officeExtensions = {'ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx'};
-
-String _buildViewerUrl(String notesUrl) {
-  final extension = Uri.parse(notesUrl).path.split('.').last.toLowerCase();
-  final encodedUrl = Uri.encodeComponent(notesUrl);
-
-  if (_officeExtensions.contains(extension)) {
-    return 'https://view.officeapps.live.com/op/embed.aspx?src=$encodedUrl';
-  }
-  return 'https://docs.google.com/gview?embedded=true&url=$encodedUrl';
-}

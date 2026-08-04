@@ -4,6 +4,7 @@ import '../core/network/api_client.dart';
 import '../core/network/api_exception.dart';
 import '../models/comment.dart';
 import '../repositories/comment_repository.dart';
+import 'skeleton.dart';
 
 class CommentsSection extends StatefulWidget {
   const CommentsSection({super.key, required this.videoId});
@@ -24,6 +25,12 @@ class _CommentsSectionState extends State<CommentsSection> {
   void initState() {
     super.initState();
     _future = _repository.fetchComments(widget.videoId);
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
   }
 
   void _retry() {
@@ -51,12 +58,6 @@ class _CommentsSectionState extends State<CommentsSection> {
   }
 
   @override
-  void dispose() {
-    _messageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +67,7 @@ class _CommentsSectionState extends State<CommentsSection> {
             future: _future,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
+                return const CommentListSkeleton();
               }
 
               if (snapshot.hasError) {

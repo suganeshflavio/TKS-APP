@@ -5,6 +5,7 @@ import '../core/network/api_exception.dart';
 import '../models/video_lesson.dart';
 import '../repositories/video_repository.dart';
 import '../widgets/inline_search_field.dart';
+import '../widgets/skeleton.dart';
 import 'video_player_page.dart';
 
 class VideosPage extends StatefulWidget {
@@ -87,7 +88,7 @@ class _VideosPageState extends State<VideosPage> {
                   future: _future,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState != ConnectionState.done) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const VideoListSkeleton();
                     }
 
                     if (snapshot.hasError) {
