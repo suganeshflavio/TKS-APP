@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/video_lesson.dart';
+import 'quiz_page.dart';
 import '../widgets/comments_section.dart';
 import '../widgets/media_video_player.dart';
 import '../widgets/notes_viewer.dart';
@@ -32,12 +33,19 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
   void _closeNotes() => setState(() => _showNotes = false);
 
+  void _openQuiz() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => QuizPage(video: widget.video)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final video = widget.video;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6EE),
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: const Color(0xFFFFF6EE),
         foregroundColor: const Color(0xFF3A1E0B),
@@ -103,22 +111,37 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       color: Color(0xFF6F4F39),
                     ),
                   ),
-                  if (video.hasNotes) ...[
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _toggleNotes,
-                        icon: const Icon(Icons.description_rounded),
-                        label: const Text('View Notes'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFF97316),
-                          side: const BorderSide(color: Color(0xFFF97316)),
-                          minimumSize: const Size.fromHeight(44),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      if (video.hasNotes)
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _toggleNotes,
+                            icon: const Icon(Icons.description_rounded),
+                            label: const Text('View Notes'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFF97316),
+                              side: const BorderSide(color: Color(0xFFF97316)),
+                              minimumSize: const Size.fromHeight(44),
+                            ),
+                          ),
+                        ),
+                      if (video.hasNotes) const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _openQuiz,
+                          icon: const Icon(Icons.quiz_rounded),
+                          label: const Text('Start MCQ'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFF97316),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size.fromHeight(44),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ],
               ),
             ),

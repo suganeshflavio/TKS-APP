@@ -78,6 +78,21 @@ class _MediaVideoPlayerState extends State<MediaVideoPlayer> {
     }
   }
 
+  Future<void> _seekRelative(Duration delta) async {
+    final value = _controller.value;
+    if (!value.isInitialized) return;
+
+    final duration = value.duration;
+    final current = value.position;
+    final targetMs = (current.inMilliseconds + delta.inMilliseconds).clamp(
+      0,
+      duration.inMilliseconds,
+    );
+    final target = Duration(milliseconds: targetMs);
+    await _controller.seekTo(target);
+    _scheduleAutoHide();
+  }
+
   Future<void> _setSpeed(double speed) async {
     await _controller.setPlaybackSpeed(speed);
     if (mounted) setState(() => _speed = speed);
@@ -139,6 +154,7 @@ class _MediaVideoPlayerState extends State<MediaVideoPlayer> {
         controlsVisible: _controlsVisible,
         onToggleControls: _toggleControls,
         onTogglePlay: _togglePlay,
+        onSeekRelative: _seekRelative,
         speed: _speed,
         onSpeedChanged: _setSpeed,
         onFullscreenToggle: _openFullscreen,
@@ -207,6 +223,21 @@ class _FullscreenVideoPageState extends State<_FullscreenVideoPage> {
     }
   }
 
+  Future<void> _seekRelative(Duration delta) async {
+    final value = widget.controller.value;
+    if (!value.isInitialized) return;
+
+    final duration = value.duration;
+    final current = value.position;
+    final targetMs = (current.inMilliseconds + delta.inMilliseconds).clamp(
+      0,
+      duration.inMilliseconds,
+    );
+    final target = Duration(milliseconds: targetMs);
+    await widget.controller.seekTo(target);
+    _scheduleAutoHide();
+  }
+
   Future<void> _setSpeed(double speed) async {
     await widget.controller.setPlaybackSpeed(speed);
     widget.onSpeedChanged(speed);
@@ -244,6 +275,7 @@ class _FullscreenVideoPageState extends State<_FullscreenVideoPage> {
               controlsVisible: _controlsVisible,
               onToggleControls: _toggleControls,
               onTogglePlay: _togglePlay,
+              onSeekRelative: _seekRelative,
               speed: _speed,
               onSpeedChanged: _setSpeed,
               onFullscreenToggle: _exitFullscreen,
@@ -256,12 +288,13 @@ class _FullscreenVideoPageState extends State<_FullscreenVideoPage> {
   }
 }
 
-class _VideoSurface extends StatelessWidget {
+class _VideoSurface extends StatefulWidget {
   const _VideoSurface({
     required this.controller,
     required this.controlsVisible,
     required this.onToggleControls,
     required this.onTogglePlay,
+    required this.onSeekRelative,
     required this.speed,
     required this.onSpeedChanged,
     required this.onFullscreenToggle,
@@ -272,14 +305,44 @@ class _VideoSurface extends StatelessWidget {
   final bool controlsVisible;
   final VoidCallback onToggleControls;
   final VoidCallback onTogglePlay;
+  final Future<void> Function(Duration delta) onSeekRelative;
   final double speed;
   final ValueChanged<double> onSpeedChanged;
   final VoidCallback onFullscreenToggle;
   final bool isFullscreen;
 
   @override
+  State<_VideoSurface> createState() => _VideoSurfaceState();
+}
+
+class _VideoSurfaceState extends State<_VideoSurface> {
+  Timer? _seekIndicatorTimer;
+  _SeekDirection? _seekDirection;
+
+  @override
+  void dispose() {
+    _seekIndicatorTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _handleDoubleTap(_SeekDirection direction) async {
+    _seekIndicatorTimer?.cancel();
+    setState(() => _seekDirection = direction);
+
+    await widget.onSeekRelative(
+      direction == _SeekDirection.left
+          ? const Duration(seconds: -10)
+          : const Duration(seconds: 10),
+    );
+
+    _seekIndicatorTimer = Timer(const Duration(milliseconds: 650), () {
+      if (mounted) setState(() => _seekDirection = null);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final value = controller.value;
+    final value = widget.controller.value;
     final position = value.position;
     final duration = value.duration;
     final sliderMax = duration.inMilliseconds > 0
@@ -292,12 +355,73 @@ class _VideoSurface extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onToggleControls,
+      onTap: widget.onToggleControls,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          VideoPlayer(controller),
-          if (controlsVisible)
+          VideoPlayer(widget.controller),
+          Positioned.fill(
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onDoubleTap: () => _handleDoubleTap(_SeekDirection.left),
+                    child: const SizedBox.expand(),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onDoubleTap: () => _handleDoubleTap(_SeekDirection.right),
+                    child: const SizedBox.expand(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_seekDirection != null)
+            Align(
+              alignment: _seekDirection == _SeekDirection.left
+                  ? const Alignment(-0.45, 0)
+                  : const Alignment(0.45, 0),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 120),
+                opacity: 1,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _seekDirection == _SeekDirection.left
+                            ? Icons.replay_10_rounded
+                            : Icons.forward_10_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _seekDirection == _SeekDirection.left ? '-10s' : '+10s',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (widget.controlsVisible)
             Align(
               alignment: const Alignment(0, -0.25),
               child: IconButton(
@@ -308,10 +432,10 @@ class _VideoSurface extends StatelessWidget {
                       ? Icons.pause_circle_filled_rounded
                       : Icons.play_circle_fill_rounded,
                 ),
-                onPressed: onTogglePlay,
+                onPressed: widget.onTogglePlay,
               ),
             ),
-          if (controlsVisible)
+          if (widget.controlsVisible)
             Positioned(
               left: 0,
               right: 0,
@@ -358,7 +482,7 @@ class _VideoSurface extends StatelessWidget {
                           min: 0,
                           max: sliderMax,
                           value: sliderValue,
-                          onChanged: (v) => controller.seekTo(
+                          onChanged: (v) => widget.controller.seekTo(
                             Duration(milliseconds: v.round()),
                           ),
                         ),
@@ -374,8 +498,8 @@ class _VideoSurface extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     PopupMenuButton<double>(
-                      initialValue: speed,
-                      onSelected: onSpeedChanged,
+                      initialValue: widget.speed,
+                      onSelected: widget.onSpeedChanged,
                       color: const Color(0xFF2A180E),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -387,10 +511,10 @@ class _VideoSurface extends StatelessWidget {
                               child: Text(
                                 _formatSpeed(s),
                                 style: TextStyle(
-                                  color: s == speed
+                                  color: s == widget.speed
                                       ? const Color(0xFFF97316)
                                       : Colors.white,
-                                  fontWeight: s == speed
+                                  fontWeight: s == widget.speed
                                       ? FontWeight.bold
                                       : FontWeight.normal,
                                 ),
@@ -417,7 +541,7 @@ class _VideoSurface extends StatelessWidget {
                             ),
                             const SizedBox(width: 3),
                             Text(
-                              _formatSpeed(speed),
+                              _formatSpeed(widget.speed),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -434,11 +558,11 @@ class _VideoSurface extends StatelessWidget {
                       color: Colors.white,
                       iconSize: 20,
                       icon: Icon(
-                        isFullscreen
+                        widget.isFullscreen
                             ? Icons.fullscreen_exit_rounded
                             : Icons.fullscreen_rounded,
                       ),
-                      onPressed: onFullscreenToggle,
+                      onPressed: widget.onFullscreenToggle,
                     ),
                   ],
                 ),
@@ -449,3 +573,5 @@ class _VideoSurface extends StatelessWidget {
     );
   }
 }
+
+enum _SeekDirection { left, right }

@@ -59,6 +59,9 @@ class _CommentsSectionState extends State<CommentsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardBottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final safeBottomInset = MediaQuery.of(context).padding.bottom;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -104,6 +107,11 @@ class _CommentsSectionState extends State<CommentsSection> {
 
               return ListView.separated(
                 itemCount: comments.length,
+                padding: EdgeInsets.only(
+                  bottom: keyboardBottomInset > 0
+                      ? keyboardBottomInset + 76
+                      : 12,
+                ),
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) =>
                     _CommentTile(comment: comments[index]),
@@ -111,49 +119,60 @@ class _CommentsSectionState extends State<CommentsSection> {
             },
           ),
         ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 44,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _messageController,
-                  decoration: InputDecoration(
-                    isDense: true,
-                    hintText: 'Add a comment',
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(999),
-                      borderSide: const BorderSide(color: Color(0xFFFFDDBF)),
+        AnimatedPadding(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(
+            top: 8,
+            bottom: keyboardBottomInset > 0
+                ? keyboardBottomInset
+                : safeBottomInset,
+          ),
+          child: SizedBox(
+            height: 44,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    textInputAction: TextInputAction.send,
+                    onSubmitted: (_) => _isPosting ? null : _postComment(),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: 'Add a comment',
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(999),
+                        borderSide: const BorderSide(color: Color(0xFFFFDDBF)),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 44,
-                height: 44,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: _isPosting ? null : _postComment,
-                  color: const Color(0xFFF97316),
-                  icon: _isPosting
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.send_rounded),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: _isPosting ? null : _postComment,
+                    color: const Color(0xFFF97316),
+                    icon: _isPosting
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.send_rounded),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
