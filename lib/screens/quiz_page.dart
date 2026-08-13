@@ -106,12 +106,7 @@ class _QuizPageState extends State<QuizPage> {
 
       if (!mounted) return;
       debugPrint(
-        '[QuizPage] submit result parsed: ${result.questions.map((q) => {
-          'questionId': q.questionId,
-          'selected': q.selected,
-          'correctOption': q.correctOption,
-          'answerExplanation': q.answerExplanation,
-        }).toList()}',
+        '[QuizPage] submit result parsed: ${result.questions.map((q) => {'questionId': q.questionId, 'selected': q.selected, 'correctOption': q.correctOption, 'answerExplanation': q.answerExplanation}).toList()}',
       );
       setState(() {
         _result = result;
@@ -205,7 +200,8 @@ class _QuizPageState extends State<QuizPage> {
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final test = tests[index];
-                final isCompleted = _result != null && _lastSubmittedTest?.id == test.id;
+                final isCompleted =
+                    _result != null && _lastSubmittedTest?.id == test.id;
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -256,9 +252,7 @@ class _QuizPageState extends State<QuizPage> {
                             backgroundColor: const Color(0xFFF97316),
                             foregroundColor: Colors.white,
                           ),
-                          child: Text(
-                            isCompleted ? 'Retake MCQ' : 'Start MCQ',
-                          ),
+                          child: Text(isCompleted ? 'Retake MCQ' : 'Start MCQ'),
                         ),
                       ),
                     ],
@@ -366,21 +360,20 @@ class _QuizPageState extends State<QuizPage> {
                                   ),
                                   child: Row(
                                     children: [
-                                      Icon(
-                                        optionIcon,
-                                        color: iconColor,
-                                      ),
+                                      Icon(optionIcon, color: iconColor),
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Text(
                                           '${entry.key}. ${entry.value}',
                                           style: TextStyle(
-                                            color: isSubmitted && isCorrectChoice
+                                            color:
+                                                isSubmitted && isCorrectChoice
                                                 ? const Color(0xFF1D7C4D)
                                                 : isSelected
                                                 ? const Color(0xFFB33A3A)
                                                 : const Color(0xFF3A1E0B),
-                                            fontWeight: isSubmitted && isCorrectChoice
+                                            fontWeight:
+                                                isSubmitted && isCorrectChoice
                                                 ? FontWeight.w700
                                                 : FontWeight.normal,
                                           ),
@@ -394,7 +387,9 @@ class _QuizPageState extends State<QuizPage> {
                           }),
                           if (isSubmitted) ...[
                             const SizedBox(height: 10),
-                            if (selectedIsCorrect || correctLabel.isNotEmpty || question.answerExplanation.isNotEmpty)
+                            if (selectedIsCorrect ||
+                                correctLabel.isNotEmpty ||
+                                question.answerExplanation.isNotEmpty)
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(12),
@@ -407,7 +402,8 @@ class _QuizPageState extends State<QuizPage> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (selectedIsCorrect || correctLabel.isNotEmpty)
+                                    if (selectedIsCorrect ||
+                                        correctLabel.isNotEmpty)
                                       Text(
                                         selectedIsCorrect
                                             ? 'Correct answer selected.'
@@ -419,7 +415,9 @@ class _QuizPageState extends State<QuizPage> {
                                               : const Color(0xFFB33A3A),
                                         ),
                                       ),
-                                    if (question.answerExplanation.isNotEmpty) ...[
+                                    if (question
+                                        .answerExplanation
+                                        .isNotEmpty) ...[
                                       const SizedBox(height: 8),
                                       Text(
                                         'Explanation: ${question.answerExplanation}',
@@ -597,7 +595,9 @@ class _SubmittedResultView extends StatelessWidget {
             ),
           );
           final selected = review.selected.isEmpty ? '' : review.selected;
-          final correct = review.correctOption.isEmpty ? question.correctOption : review.correctOption;
+          final correct = review.correctOption.isEmpty
+              ? question.correctOption
+              : review.correctOption;
           final explanation = review.answerExplanation.isEmpty
               ? question.answerExplanation
               : review.answerExplanation;
@@ -692,7 +692,9 @@ class _SubmittedResultView extends StatelessWidget {
                       color: isSelectedWrong
                           ? const Color(0xFFB33A3A)
                           : const Color(0xFF6E4D37),
-                      fontWeight: isSelectedWrong ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelectedWrong
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                     ),
                   ),
                 ],

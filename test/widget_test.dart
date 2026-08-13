@@ -64,9 +64,10 @@ void main() {
           'question': 'Who is the founder?',
           'selected_option': 'B',
           'correct_answer': 'B',
-          'explanation': 'Bob is the founder because he established the academy.'
-        }
-      ]
+          'explanation':
+              'Bob is the founder because he established the academy.',
+        },
+      ],
     });
 
     expect(result.questions.length, 1);
@@ -99,7 +100,7 @@ void main() {
           'correctOption': 'D',
           'selected': 'D',
           'correct': true,
-          'explanation': 'what'
+          'explanation': 'what',
         },
         {
           'questionId': 'cmsrhjs5v0037og0pxhonya95',
@@ -111,9 +112,9 @@ void main() {
           'correctOption': 'D',
           'selected': 'D',
           'correct': true,
-          'explanation': 'where'
-        }
-      ]
+          'explanation': 'where',
+        },
+      ],
     });
 
     expect(result.questions.length, 2);

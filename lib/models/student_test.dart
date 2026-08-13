@@ -222,40 +222,44 @@ class StudentAttemptQuestionReview {
   final String answerExplanation;
 
   factory StudentAttemptQuestionReview.fromJson(Map<String, dynamic> json) {
-    final questionId = (json['questionId'] as String? ??
-            json['question_id'] as String? ??
-            json['id'] as String? ??
-            '')
-        .trim();
+    final questionId =
+        (json['questionId'] as String? ??
+                json['question_id'] as String? ??
+                json['id'] as String? ??
+                '')
+            .trim();
 
-    final selected = (json['selected'] as String? ??
-            json['selected_option'] as String? ??
-            json['selectedOption'] as String? ??
-            json['answer'] as String? ??
-            json['userAnswer'] as String? ??
-            '')
-        .toString()
-        .trim();
+    final selected =
+        (json['selected'] as String? ??
+                json['selected_option'] as String? ??
+                json['selectedOption'] as String? ??
+                json['answer'] as String? ??
+                json['userAnswer'] as String? ??
+                '')
+            .toString()
+            .trim();
 
-    final correctOption = (json['correctOption'] as String? ??
-            json['correct_option'] as String? ??
-            json['correct_option_answer'] as String? ??
-            json['correctAnswer'] as String? ??
-            json['correct_answer'] as String? ??
-            json['answer'] as String? ??
-            '')
-        .toString()
-        .trim();
+    final correctOption =
+        (json['correctOption'] as String? ??
+                json['correct_option'] as String? ??
+                json['correct_option_answer'] as String? ??
+                json['correctAnswer'] as String? ??
+                json['correct_answer'] as String? ??
+                json['answer'] as String? ??
+                '')
+            .toString()
+            .trim();
 
-    final explanation = (json['answerExplanation'] as String? ??
-            json['answer_explanation'] as String? ??
-            json['explanation'] as String? ??
-            json['correctAnswerExplanation'] as String? ??
-            json['correct_answer_explanation'] as String? ??
-            json['reason'] as String? ??
-            '')
-        .toString()
-        .trim();
+    final explanation =
+        (json['answerExplanation'] as String? ??
+                json['answer_explanation'] as String? ??
+                json['explanation'] as String? ??
+                json['correctAnswerExplanation'] as String? ??
+                json['correct_answer_explanation'] as String? ??
+                json['reason'] as String? ??
+                '')
+            .toString()
+            .trim();
 
     return StudentAttemptQuestionReview(
       questionId: questionId,
@@ -291,7 +295,8 @@ class StudentAttemptResult {
   final List<StudentAttemptQuestionReview> questions;
 
   factory StudentAttemptResult.fromJson(Map<String, dynamic> json) {
-    final rawQuestions = (json['questions'] as List<dynamic>?) ??
+    final rawQuestions =
+        (json['questions'] as List<dynamic>?) ??
         (json['answers'] as List<dynamic>?) ??
         <dynamic>[];
 
@@ -306,10 +311,9 @@ class StudentAttemptResult {
       submittedAt: _parseDateTime(json['submittedAt'] as String?),
       questions: rawQuestions
           .map(
-            (item) =>
-                StudentAttemptQuestionReview.fromJson(
-                  item as Map<String, dynamic>,
-                ),
+            (item) => StudentAttemptQuestionReview.fromJson(
+              item as Map<String, dynamic>,
+            ),
           )
           .toList(),
     );
