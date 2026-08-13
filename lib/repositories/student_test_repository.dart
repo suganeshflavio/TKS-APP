@@ -14,6 +14,9 @@ class StudentTestRepository {
     debugPrint('[StudentTestRepository] GET /api/tests/student/video/$videoId');
     try {
       final response = await _client.get('/api/tests/student/video/$videoId');
+      debugPrint(
+        '[StudentTestRepository] questions response: ${response.data}',
+      );
       final body = StudentTestListResponse.fromJson(
         response.data as Map<String, dynamic>,
       );
@@ -30,6 +33,9 @@ class StudentTestRepository {
     debugPrint('[StudentTestRepository] GET /api/tests/student/$testId');
     try {
       final response = await _client.get('/api/tests/student/$testId');
+      debugPrint(
+        '[StudentTestRepository] single test response: ${response.data}',
+      );
       final body = StudentTestResponse.fromJson(
         response.data as Map<String, dynamic>,
       );
@@ -63,10 +69,12 @@ class StudentTestRepository {
     };
 
     try {
+      debugPrint('[StudentTestRepository] submit payload: $payload');
       final response = await _client.post(
         '/api/tests/$testId/attempts',
         data: payload,
       );
+      debugPrint('[StudentTestRepository] submit response: ${response.data}');
       final body = SubmitAttemptResponse.fromJson(
         response.data as Map<String, dynamic>,
       );

@@ -41,7 +41,6 @@ class SessionState extends ChangeNotifier {
 
   Future<void> restoreSession() async {
     _isRestoring = true;
-    notifyListeners();
     final token = await _storage.readToken();
     final user = await _storage.readUser();
     if (token != null && token.isNotEmpty && user != null) {

@@ -51,8 +51,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Future<void> _refresh() async {
     final dashboardFuture = DashboardRepository().load();
-    final testimonialsFuture =
-        _testimonialRepository.fetchPublicTestimonials();
+    final testimonialsFuture = _testimonialRepository.fetchPublicTestimonials();
     final coursesFuture = context.read<SessionState>().refreshCourses();
 
     setState(() {
@@ -91,9 +90,114 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     final courses = session.courses;
     final isLoadingCourses = session.isLoadingCourses;
     final fewCourses = courses.take(2).toList();
+    final username = session.user?.name.split(' ').first ?? 'User';
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF6EE),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFFF6EE),
+        elevation: 0,
+        centerTitle: true,
+        leading: Builder(
+          builder: (context) => IconButton(
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            icon: const Icon(Icons.menu_rounded, color: Color(0xFF3A1E0B)),
+          ),
+        ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            AppLogo(size: 28),
+            SizedBox(width: 8),
+            Text(
+              'TKS Academy',
+              style: TextStyle(
+                color: Color(0xFF3A1E0B),
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_none_rounded),
+            color: const Color(0xFF3A1E0B),
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        backgroundColor: const Color(0xFFFFF6EE),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFFFDAA5D), Color(0xFFF97316)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AppLogo(size: 62),
+                    const SizedBox(height: 12),
+                    BrandTitle(
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.home_rounded),
+                      title: const Text('Home'),
+                      onTap: () => Navigator.pop(context),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.menu_book_rounded),
+                      title: const Text('Courses'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const CoursesPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.lock_reset_rounded),
+                      title: const Text('Forgot Password'),
+                      enabled: false,
+                      onTap: null,
+                    ),
+                  ],
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 12, 16, 20),
+                child: Text(
+                  '© 2026 TKS Academy',
+                  style: TextStyle(color: Color(0xFF8F6A4D), fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
       body: FutureBuilder<DashboardContent>(
         future: _dashboardFuture,
         builder: (context, snapshot) {
@@ -134,7 +238,23 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 children: [
-                  _SchoolBannerCard(school: content.school),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      'Hi $username',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF3A1E0B),
+                      ),
+                    ),
+                  ),
+                  const BannerCarousel(
+                    imagePaths: [
+                      'assets/images/tks-banner1.jpg',
+                      'assets/images/tks-banner2.jpg',
+                    ],
+                  ),
                   const SizedBox(height: 16),
                   if (isLoadingCourses)
                     const CourseSectionSkeleton()
@@ -210,13 +330,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                       );
                     }),
                   ],
-                  const SizedBox(height: 10),
-                  const BannerCarousel(
-                    imagePaths: [
-                      'assets/images/tks-banner1.jpg',
-                      'assets/images/tks-banner2.jpg',
-                    ],
-                  ),
                   const SizedBox(height: 20),
                   FutureBuilder<List<Testimonial>>(
                     future: _testimonialsFuture,
@@ -251,57 +364,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _SchoolBannerCard extends StatelessWidget {
-  const _SchoolBannerCard({required this.school});
-
-  final SchoolProfile school;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(26),
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFDAA5D), Color(0xFFF97316)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            const AppLogo(size: 84),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  BrandTitle(
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    school.location,
-                    style: const TextStyle(
-                      color: Color(0xFFFDEEE2),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
