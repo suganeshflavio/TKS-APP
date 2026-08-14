@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 
-import 'home_page.dart';
-import 'login_page.dart';
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_typography.dart';
+import '../widgets/app_background.dart';
+import '../widgets/app_logo.dart';
+import '../widgets/custom_buttons.dart';
+import '../widgets/custom_card.dart';
+import '../widgets/custom_text_field.dart';
 
-class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
 
   @override
-  State<SignUpPage> createState() => _SignUpPageState();
+  State<SignupPage> createState() => _SignupPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class _SignupPageState extends State<SignupPage> {
+  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -32,182 +38,150 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [const Color(0xFF1A1A1A), const Color(0xFF2D2D2D)]
-                : [const Color(0xFFFFF8F0), const Color(0xFFFFE8CC)],
-          ),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () => Navigator.pop(context),
         ),
+      ),
+      body: AppBackground(
+        useHeroGradient: true,
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight - 40),
-                  child: Center(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 460),
+                child: AppCard(
+                  padding: const EdgeInsets.all(28),
+                  child: Form(
+                    key: _formKey,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            color: isDark ? Colors.white : Colors.black,
+                        const Center(child: AppLogo(size: 80)),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: Text(
+                            'Create Your Account',
+                            style: AppTypography.displayMedium,
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        Text(
-                          'Create Your Account',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+                        const SizedBox(height: 6),
+                        Center(
+                          child: Text(
+                            'Join TKS Academy and start learning today',
+                            style: AppTypography.bodyMedium,
+                            textAlign: TextAlign.center,
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        _buildTextField(
-                          context: context,
-                          isDark: isDark,
+                        const SizedBox(height: 24),
+                        AppTextField(
                           controller: _nameController,
-                          hint: 'Your Name',
-                          icon: Icons.person_rounded,
+                          labelText: 'Full Name',
+                          hintText: 'Enter your full name',
+                          prefixIcon: Icons.person_outlined,
                         ),
                         const SizedBox(height: 16),
-                        _buildTextField(
-                          context: context,
-                          isDark: isDark,
+                        AppTextField(
                           controller: _emailController,
-                          hint: 'Email',
-                          icon: Icons.email_rounded,
+                          labelText: 'Email Address',
+                          hintText: 'Enter your email',
+                          prefixIcon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
                         ),
                         const SizedBox(height: 16),
-                        _buildTextField(
-                          context: context,
-                          isDark: isDark,
+                        AppTextField(
                           controller: _phoneController,
-                          hint: 'Enter Mobile Number',
-                          icon: Icons.phone_rounded,
+                          labelText: 'Mobile Number',
+                          hintText: 'Enter mobile number',
+                          prefixIcon: Icons.phone_outlined,
+                          keyboardType: TextInputType.phone,
                         ),
                         const SizedBox(height: 16),
-                        _buildPasswordField(
-                          context: context,
-                          isDark: isDark,
+                        AppTextField(
                           controller: _passwordController,
-                          hint: 'Password',
-                          obscure: _obscurePassword,
-                          onToggle: () {
-                            setState(() => _obscurePassword = !_obscurePassword);
-                          },
+                          labelText: 'Password',
+                          hintText: 'Create a password',
+                          prefixIcon: Icons.lock_outlined,
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                            onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 16),
-                        _buildPasswordField(
-                          context: context,
-                          isDark: isDark,
+                        AppTextField(
                           controller: _confirmPasswordController,
-                          hint: 'Confirm Password',
-                          obscure: _obscureConfirmPassword,
-                          onToggle: () {
-                            setState(() {
-                              _obscureConfirmPassword = !_obscureConfirmPassword;
-                            });
-                          },
+                          labelText: 'Confirm Password',
+                          hintText: 'Re-enter your password',
+                          prefixIcon: Icons.lock_clock_outlined,
+                          obscureText: _obscureConfirmPassword,
+                          suffixIcon: IconButton(
+                            onPressed: () => setState(
+                              () => _obscureConfirmPassword =
+                                  !_obscureConfirmPassword,
+                            ),
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         Row(
                           children: [
-                            GestureDetector(
-                              onTap: () {
-                                setState(() => _rememberMe = !_rememberMe);
-                              },
-                              child: Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Checkbox(
+                                value: _rememberMe,
+                                activeColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    width: 2,
-                                  ),
-                                  color: _rememberMe
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Colors.transparent,
                                 ),
-                                child: _rememberMe
-                                    ? const Icon(
-                                        Icons.check,
-                                        size: 14,
-                                        color: Colors.white,
-                                      )
-                                    : null,
+                                onChanged: (value) => setState(
+                                  () => _rememberMe = value ?? false,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              'Remember Me',
-                              style: TextStyle(
-                                color: isDark ? Colors.grey[300] : Colors.grey[600],
-                                fontSize: 14,
-                              ),
-                            ),
+                            Text('Remember Me', style: AppTypography.bodyMedium),
                           ],
                         ),
                         const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: FilledButton(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (_) => const HomePage()),
-                              );
-                            },
-                            style: FilledButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Sign Up',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                        AppPrimaryButton(
+                          text: 'Sign Up',
+                          icon: Icons.check_circle_outline,
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               'Already have an account? ',
-                              style: TextStyle(
-                                color: isDark ? Colors.grey[300] : Colors.grey[600],
-                              ),
+                              style: AppTypography.bodyMedium,
                             ),
                             GestureDetector(
-                              onTap: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                                );
-                              },
+                              onTap: () => Navigator.pop(context),
                               child: Text(
-                                'Sign in',
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
+                                'Sign In',
+                                style: AppTypography.labelLarge.copyWith(
+                                  color: AppColors.primaryDark,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
@@ -217,81 +191,9 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                   ),
                 ),
-              );
-            },
+              ),
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required BuildContext context,
-    required bool isDark,
-    required TextEditingController controller,
-    required String hint,
-    required IconData icon,
-  }) {
-    return TextField(
-      controller: controller,
-      style: TextStyle(color: isDark ? Colors.white : Colors.black),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: isDark ? Colors.grey[500] : Colors.grey[400],
-        ),
-        prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
-        filled: true,
-        fillColor: isDark ? Colors.grey[800] : Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPasswordField({
-    required BuildContext context,
-    required bool isDark,
-    required TextEditingController controller,
-    required String hint,
-    required bool obscure,
-    required VoidCallback onToggle,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscure,
-      style: TextStyle(color: isDark ? Colors.white : Colors.black),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: isDark ? Colors.grey[500] : Colors.grey[400],
-        ),
-        prefixIcon: Icon(
-          Icons.lock_rounded,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        suffixIcon: GestureDetector(
-          onTap: onToggle,
-          child: Icon(
-            obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-        ),
-        filled: true,
-        fillColor: isDark ? Colors.grey[800] : Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
         ),
       ),
     );

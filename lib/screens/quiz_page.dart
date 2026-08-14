@@ -6,6 +6,12 @@ import '../models/student_test.dart';
 import '../models/video_lesson.dart';
 import '../repositories/student_test_repository.dart';
 
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_typography.dart';
+import '../widgets/app_background.dart';
+import '../widgets/custom_buttons.dart';
+import '../widgets/custom_card.dart';
+
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key, required this.video});
 
@@ -66,8 +72,11 @@ class _QuizPageState extends State<QuizPage> {
     final total = test.questions.length;
     if (_answersByQuestionId.length != total) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please answer all questions before submitting.'),
+        SnackBar(
+          backgroundColor: AppColors.warning,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: const Text('Please answer all questions before submitting.'),
         ),
       );
       return;
@@ -77,9 +86,14 @@ class _QuizPageState extends State<QuizPage> {
       (value) => value != 'A' && value != 'B' && value != 'C' && value != 'D',
     );
     if (invalidSelection) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Invalid option detected.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: const Text('Invalid option detected.'),
+        ),
+      );
       return;
     }
 
@@ -105,16 +119,18 @@ class _QuizPageState extends State<QuizPage> {
       );
 
       if (!mounted) return;
-      debugPrint(
-        '[QuizPage] submit result parsed: ${result.questions.map((q) => {'questionId': q.questionId, 'selected': q.selected, 'correctOption': q.correctOption, 'answerExplanation': q.answerExplanation}).toList()}',
-      );
       setState(() {
         _result = result;
         _lastSubmittedTest = test;
         _activeTest = null;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Test submitted successfully.')),
+        SnackBar(
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: const Text('Test submitted successfully.'),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
@@ -132,135 +148,134 @@ class _QuizPageState extends State<QuizPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6EE),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF6EE),
-        foregroundColor: const Color(0xFF3A1E0B),
-        elevation: 0,
-        title: const Text('MCQ/Test'),
+        title: const Text('MCQ Assessment'),
       ),
-      body: FutureBuilder<List<StudentTest>>(
-        future: _testsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: AppBackground(
+        child: FutureBuilder<List<StudentTest>>(
+          future: _testsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              );
+            }
 
-          if (snapshot.hasError) {
-            final message = snapshot.error is ApiException
-                ? (snapshot.error as ApiException).message
-                : 'Unable to load tests.';
-            return _ErrorView(
-              message: message,
-              onRetry: () {
-                setState(() {
-                  _testsFuture = _repository.fetchTestsByVideo(widget.video.id);
-                });
-              },
-            );
-          }
-
-          final tests = snapshot.data ?? <StudentTest>[];
-          if (tests.isEmpty) {
-            return const Center(
-              child: Text(
-                'No MCQ/Test available for this video yet.',
-                style: TextStyle(color: Color(0xFF6E4D37)),
-              ),
-            );
-          }
-
-          if (_activeTest == null) {
-            if (_result != null && _lastSubmittedTest != null) {
-              return _SubmittedResultView(
-                test: _lastSubmittedTest!,
-                result: _result!,
+            if (snapshot.hasError) {
+              final message = snapshot.error is ApiException
+                  ? (snapshot.error as ApiException).message
+                  : 'Unable to load tests.';
+              return _ErrorView(
+                message: message,
                 onRetry: () {
                   setState(() {
-                    _result = null;
-                    _lastSubmittedTest = null;
-                    _answersByQuestionId.clear();
-                  });
-                },
-                onStartAgain: () {
-                  setState(() {
-                    _result = null;
-                    _lastSubmittedTest = null;
-                    _answersByQuestionId.clear();
-                    _activeTest = null;
-                    _startedAt = null;
+                    _testsFuture = _repository.fetchTestsByVideo(widget.video.id);
                   });
                 },
               );
             }
 
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: tests.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final test = tests[index];
-                final isCompleted =
-                    _result != null && _lastSubmittedTest?.id == test.id;
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: const Color(0xFFFFDDBF)),
-                  ),
+            final tests = snapshot.data ?? <StudentTest>[];
+            if (tests.isEmpty) {
+              return Center(
+                child: AppCard(
+                  padding: const EdgeInsets.all(28),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        test.testName,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF3A1E0B),
-                        ),
+                      const Icon(
+                        Icons.quiz_outlined,
+                        size: 48,
+                        color: AppColors.textMuted,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${test.totalQuestions} questions • ${test.marksPerQuestion} mark(s) each',
-                        style: const TextStyle(color: Color(0xFF8F6A4D)),
-                      ),
-                      if (isCompleted && _result != null) ...[
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF1E7),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Score: ${_result!.obtainedMarks}/${_result!.totalMarks} '
-                            '(Correct: ${_result!.correctAnswers}, Wrong: ${_result!.wrongAnswers})',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF3A1E0B),
-                            ),
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => _loadTest(test.id),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF97316),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Text(isCompleted ? 'Retake MCQ' : 'Start MCQ'),
-                        ),
+                      Text(
+                        'No MCQ / Tests available for this video yet.',
+                        style: AppTypography.bodyMedium,
+                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
+                ),
+              );
+            }
+
+            if (_activeTest == null) {
+              if (_result != null && _lastSubmittedTest != null) {
+                return _SubmittedResultView(
+                  test: _lastSubmittedTest!,
+                  result: _result!,
+                  onRetry: () {
+                    setState(() {
+                      _result = null;
+                      _lastSubmittedTest = null;
+                      _answersByQuestionId.clear();
+                    });
+                  },
+                  onStartAgain: () {
+                    setState(() {
+                      _result = null;
+                      _lastSubmittedTest = null;
+                      _answersByQuestionId.clear();
+                      _activeTest = null;
+                      _startedAt = null;
+                    });
+                  },
                 );
-              },
-            );
-          }
+              }
+
+              return ListView.separated(
+                padding: const EdgeInsets.all(18),
+                itemCount: tests.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 14),
+                itemBuilder: (context, index) {
+                  final test = tests[index];
+                  final isCompleted =
+                      _result != null && _lastSubmittedTest?.id == test.id;
+                  return AppCard(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          test.testName,
+                          style: AppTypography.titleLarge,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '${test.totalQuestions} questions • ${test.marksPerQuestion} mark(s) each',
+                          style: AppTypography.labelSmall,
+                        ),
+                        if (isCompleted && _result != null) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLight,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Score: ${_result!.obtainedMarks}/${_result!.totalMarks} '
+                              '(Correct: ${_result!.correctAnswers}, Wrong: ${_result!.wrongAnswers})',
+                              style: AppTypography.titleMedium.copyWith(
+                                fontSize: 14,
+                                color: AppColors.primaryDark,
+                              ),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        AppPrimaryButton(
+                          text: isCompleted ? 'Retake MCQ' : 'Start MCQ',
+                          icon: Icons.play_arrow_rounded,
+                          onPressed: () => _loadTest(test.id),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            }
 
           final test = _activeTest!;
           return Column(
@@ -502,8 +517,9 @@ class _QuizPageState extends State<QuizPage> {
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _SubmittedResultView extends StatelessWidget {

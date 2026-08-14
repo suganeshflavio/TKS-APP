@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_typography.dart';
 import '../models/dashboard_content.dart';
+import '../widgets/app_background.dart';
+import '../widgets/custom_card.dart';
 import 'resource_detail_page.dart';
 
 class ResourcesPage extends StatelessWidget {
@@ -11,67 +15,54 @@ class ResourcesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6EE),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF6EE),
-        foregroundColor: const Color(0xFF3A1E0B),
-        elevation: 0,
-        title: const Text('Resources'),
+        title: const Text('Learning Resources'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Resources',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF203047),
+      body: AppBackground(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Explore Study Materials',
+                style: AppTypography.displayMedium.copyWith(fontSize: 24),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Select a resource to explore',
-              style: TextStyle(fontSize: 15, color: Colors.blueGrey.shade400),
-            ),
-            const SizedBox(height: 18),
-            Expanded(
-              child: ListView.separated(
-                itemCount: resources.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 14),
-                itemBuilder: (context, index) {
-                  final item = resources[index];
-                  final accent = _hexColor(item.accent);
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(22),
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ResourceDetailPage(resource: item),
-                        ),
-                      );
-                    },
-                    child: Container(
+              const SizedBox(height: 4),
+              Text(
+                'Select a resource to open reference guides and notes',
+                style: AppTypography.bodyMedium,
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: resources.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 14),
+                  itemBuilder: (context, index) {
+                    final item = resources[index];
+                    final accent = _hexColor(item.accent);
+                    return AppCard(
                       padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(22),
-                        border: Border.all(color: const Color(0xFFFFDDBF)),
-                      ),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ResourceDetailPage(resource: item),
+                          ),
+                        );
+                      },
                       child: Row(
                         children: [
                           Container(
-                            width: 58,
-                            height: 58,
+                            width: 54,
+                            height: 54,
                             decoration: BoxDecoration(
                               color: accent.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(18),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Icon(
                               _resourceIcon(item.icon),
                               color: accent,
+                              size: 26,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -81,35 +72,29 @@ class ResourcesPage extends StatelessWidget {
                               children: [
                                 Text(
                                   item.title,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF3A1E0B),
-                                  ),
+                                  style: AppTypography.titleLarge.copyWith(fontSize: 17),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   item.subtitle,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.brown.shade300,
-                                  ),
+                                  style: AppTypography.labelSmall,
                                 ),
                               ],
                             ),
                           ),
                           const Icon(
-                            Icons.arrow_forward,
-                            color: Color(0xFFAA7751),
+                            Icons.arrow_forward_ios_rounded,
+                            color: AppColors.textMuted,
+                            size: 16,
                           ),
                         ],
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

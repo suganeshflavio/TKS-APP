@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../core/network/api_client.dart';
 import '../core/network/api_exception.dart';
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_typography.dart';
 import '../models/video_lesson.dart';
 import '../repositories/video_repository.dart';
+import '../widgets/app_background.dart';
+import '../widgets/custom_buttons.dart';
+import '../widgets/custom_card.dart';
 import '../widgets/inline_search_field.dart';
 import '../widgets/skeleton.dart';
 import 'video_player_page.dart';
@@ -65,118 +70,132 @@ class _VideosPageState extends State<VideosPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6EE),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF6EE),
-        foregroundColor: const Color(0xFF3A1E0B),
-        elevation: 0,
         title: Text(widget.chapterName),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              InlineSearchField(
-                hintText: 'Search videos',
-                onChanged: (value) => setState(() => _query = value),
-              ),
-              const SizedBox(height: 14),
-              Expanded(
-                child: FutureBuilder<List<VideoLesson>>(
-                  future: _future,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState != ConnectionState.done) {
-                      return const VideoListSkeleton();
-                    }
+      body: AppBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                InlineSearchField(
+                  hintText: 'Search video lessons...',
+                  onChanged: (value) => setState(() => _query = value),
+                ),
+                const SizedBox(height: 18),
+                Expanded(
+                  child: FutureBuilder<List<VideoLesson>>(
+                    future: _future,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return const VideoListSkeleton();
+                      }
 
-                    if (snapshot.hasError) {
-                      final message = snapshot.error is ApiException
-                          ? (snapshot.error as ApiException).message
-                          : 'Unable to load videos: ${snapshot.error}';
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              message,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Color(0xFF6E4D37)),
-                            ),
-                            const SizedBox(height: 12),
-                            ElevatedButton(
-                              onPressed: _retry,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFF97316),
-                                foregroundColor: Colors.white,
-                              ),
-                              child: const Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    final videos = (snapshot.data ?? [])
-                        .where(
-                          (video) => video.videoName.toLowerCase().contains(
-                            _query.trim().toLowerCase(),
-                          ),
-                        )
-                        .toList();
-
-                    if (videos.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No videos found.',
-                          style: TextStyle(color: Color(0xFF6E4D37)),
-                        ),
-                      );
-                    }
-
-                    final notedVideos = videos
-                        .where((video) => video.hasNotes)
-                        .toList();
-
-                    return ListView(
-                      children: [
-                        ...videos.map(
-                          (video) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _VideoTile(
-                              video: video,
-                              onTap: () => _openVideo(video),
+                      if (snapshot.hasError) {
+                        final message = snapshot.error is ApiException
+                            ? (snapshot.error as ApiException).message
+                            : 'Unable to load videos';
+                        return Center(
+                          child: AppCard(
+                            padding: const EdgeInsets.all(28),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline_rounded,
+                                  size: 44,
+                                  color: AppColors.error,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  message,
+                                  textAlign: TextAlign.center,
+                                  style: AppTypography.bodyMedium,
+                                ),
+                                const SizedBox(height: 16),
+                                AppPrimaryButton(
+                                  text: 'Retry',
+                                  height: 44,
+                                  onPressed: _retry,
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        if (notedVideos.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Notes',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF3A1E0B),
+                        );
+                      }
+
+                      final videos = (snapshot.data ?? [])
+                          .where(
+                            (video) => video.videoName.toLowerCase().contains(
+                              _query.trim().toLowerCase(),
+                            ),
+                          )
+                          .toList();
+
+                      if (videos.isEmpty) {
+                        return Center(
+                          child: AppCard(
+                            padding: const EdgeInsets.all(28),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.video_library_outlined,
+                                  size: 44,
+                                  color: AppColors.textMuted,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No video lessons found.',
+                                  style: AppTypography.bodyMedium,
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          ...notedVideos.map(
+                        );
+                      }
+
+                      final notedVideos = videos
+                          .where((video) => video.hasNotes)
+                          .toList();
+
+                      return ListView(
+                        children: [
+                          ...videos.map(
                             (video) => Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: _NoteTile(
+                              child: _VideoTile(
                                 video: video,
-                                onTap: () => _openVideo(video, autoShowNotes: true),
+                                onTap: () => _openVideo(video),
                               ),
                             ),
                           ),
+                          if (notedVideos.isNotEmpty) ...[
+                            const SizedBox(height: 14),
+                            Text(
+                              'Lesson Notes & Resources',
+                              style: AppTypography.titleLarge.copyWith(fontSize: 18),
+                            ),
+                            const SizedBox(height: 12),
+                            ...notedVideos.map(
+                              (video) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _NoteTile(
+                                  video: video,
+                                  onTap: () => _openVideo(video, autoShowNotes: true),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -192,30 +211,49 @@ class _VideoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFFDDBF)),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: const CircleAvatar(
-          backgroundColor: Color(0xFFFFE6D2),
-          child: Icon(Icons.play_arrow_rounded, color: Color(0xFFF97316)),
-        ),
-        title: Text(
-          video.videoName,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF3A1E0B),
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.play_arrow_rounded,
+              color: AppColors.primaryDark,
+              size: 28,
+            ),
           ),
-        ),
-        subtitle: Text(video.subject),
-        trailing: const Icon(Icons.arrow_forward_rounded),
-        onTap: onTap,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  video.videoName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.titleMedium,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  video.subject,
+                  style: AppTypography.labelSmall,
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: AppColors.textMuted,
+            size: 16,
+          ),
+        ],
       ),
     );
   }
@@ -229,35 +267,51 @@ class _NoteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFFDDBF)),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: const CircleAvatar(
-          backgroundColor: Color(0xFFFFE6D2),
-          child: Icon(Icons.description_rounded, color: Color(0xFFF97316)),
-        ),
-        title: Text(
-          video.displayNotesFileName,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF3A1E0B),
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      onTap: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.secondaryLight,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.description_outlined,
+              color: AppColors.secondaryDark,
+              size: 24,
+            ),
           ),
-        ),
-        subtitle: Text(
-          video.videoName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: Color(0xFF8F6A4D)),
-        ),
-        trailing: const Icon(Icons.arrow_forward_rounded),
-        onTap: onTap,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  video.displayNotesFileName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.titleMedium,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  video.videoName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.labelSmall,
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: AppColors.textMuted,
+            size: 16,
+          ),
+        ],
       ),
     );
   }

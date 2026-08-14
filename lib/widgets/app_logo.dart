@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
 
 class AppLogo extends StatelessWidget {
-  const AppLogo({super.key, this.size = 96});
+  const AppLogo({
+    super.key,
+    this.size = 96,
+    this.showBackground = false,
+  });
 
   final double size;
+  final bool showBackground;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
       child: Image.asset(
         'assets/images/tks_academy_logo.png',
         fit: BoxFit.contain,

@@ -32,9 +32,6 @@ dependencies:
     sdk: flutter
   provider: ^6.1.5
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
   dio: ^5.10.0
   flutter_secure_storage: ^10.3.1
   flutter_dotenv: ^6.0.1
@@ -64,11 +61,12 @@ flutter_launcher_icons:
   remove_alpha_ios: true
 
 flutter_native_splash:
-  color: "#FFF8F0"
+  color: "#FFF7ED"
   image: assets/images/tks_academy_logo.png
   android_12:
     image: assets/images/tks_academy_logo.png
-    color: "#FFF8F0"
+    icon_background_color: "#FFFFFF"
+    color: "#FFF7ED"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

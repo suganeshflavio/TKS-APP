@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_typography.dart';
 import '../state/session_state.dart';
+import '../widgets/app_background.dart';
+import '../widgets/custom_buttons.dart';
+import '../widgets/custom_card.dart';
 import 'login_page.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -21,50 +26,89 @@ class ProfilePage extends StatelessWidget {
     final user = context.watch<SessionState>().user;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6EE),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF6EE),
-        foregroundColor: const Color(0xFF3A1E0B),
-        elevation: 0,
-        title: const Text('Profile'),
+        title: const Text('My Profile'),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              const CircleAvatar(
-                radius: 44,
-                backgroundColor: Color(0xFFFFE6D2),
-                child: Icon(
-                  Icons.person_rounded,
-                  size: 48,
-                  color: Color(0xFFF97316),
-                ),
-              ),
-              const SizedBox(height: 20),
-              _ProfileField(label: 'Name', value: user?.name ?? '-'),
-              const SizedBox(height: 12),
-              _ProfileField(label: 'Email', value: user?.email ?? '-'),
-              const SizedBox(height: 12),
-              _ProfileField(
-                label: 'Mobile',
-                value: user?.mobile ?? 'Not provided',
-              ),
-              const SizedBox(height: 28),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => _handleLogout(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF97316),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(50),
+      body: AppBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Column(
+              children: [
+                AppCard(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primaryLight,
+                          border: Border.all(color: AppColors.primary, width: 2),
+                          boxShadow: AppColors.primaryShadow,
+                        ),
+                        child: const Icon(
+                          Icons.person_rounded,
+                          size: 50,
+                          color: AppColors.primaryDark,
+                        ),
+                      ),
+                      // const SizedBox(height: 16),
+                      // Text(
+                      //   user?.name ?? 'Student Name',
+                      //   style: AppTypography.displayMedium.copyWith(fontSize: 22),
+                      // ),
+                      // const SizedBox(height: 4),
+                      // Text(
+                      //   user?.email ?? 'student@example.com',
+                      //   style: AppTypography.bodyMedium,
+                      // ),
+                    ],
                   ),
-                  child: const Text('Logout'),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                AppCard(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Account Details',
+                        style: AppTypography.titleLarge.copyWith(fontSize: 18),
+                      ),
+                      const SizedBox(height: 16),
+                      _ProfileTile(
+                        icon: Icons.person_outline_rounded,
+                        label: 'Full Name',
+                        value: user?.name ?? '-',
+                      ),
+                      const Divider(height: 24, color: AppColors.cardBorder),
+                      _ProfileTile(
+                        icon: Icons.email_outlined,
+                        label: 'Email Address',
+                        value: user?.email ?? '-',
+                      ),
+                      const Divider(height: 24, color: AppColors.cardBorder),
+                      _ProfileTile(
+                        icon: Icons.phone_android_rounded,
+                        label: 'Mobile Number',
+                        value: user?.mobile ?? 'Not provided',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                AppPrimaryButton(
+                  text: 'Sign Out',
+                  icon: Icons.logout_rounded,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                  ),
+                  onPressed: () => _handleLogout(context),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -72,43 +116,47 @@ class ProfilePage extends StatelessWidget {
   }
 }
 
-class _ProfileField extends StatelessWidget {
-  const _ProfileField({required this.label, required this.value});
+class _ProfileTile extends StatelessWidget {
+  const _ProfileTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
+  final IconData icon;
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFDDBF)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFFA3734F),
-              fontWeight: FontWeight.w700,
-            ),
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Color(0xFF3A1E0B),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+          child: Icon(icon, color: AppColors.textSecondary, size: 20),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: AppTypography.labelSmall,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: AppTypography.titleMedium.copyWith(fontSize: 15),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

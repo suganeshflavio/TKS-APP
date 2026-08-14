@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../core/network/api_client.dart';
 import '../core/network/api_exception.dart';
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_typography.dart';
 import '../repositories/testimonial_repository.dart';
+import 'custom_buttons.dart';
 
 Future<void> showReviewSheet(BuildContext context) {
   return showModalBottomSheet(
@@ -10,7 +13,7 @@ Future<void> showReviewSheet(BuildContext context) {
     isScrollControlled: true,
     backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
     builder: (_) => const ReviewSheet(),
   );
@@ -42,7 +45,7 @@ class _ReviewSheetState extends State<ReviewSheet> {
       return;
     }
     if (_reviewController.text.trim().isEmpty) {
-      setState(() => _error = 'Please write a review.');
+      setState(() => _error = 'Please write your review feedback.');
       return;
     }
 
@@ -59,8 +62,11 @@ class _ReviewSheetState extends State<ReviewSheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Your review will show after admin approval.'),
+        SnackBar(
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: const Text('Thank you! Your review will appear after approval.'),
         ),
       );
     } on ApiException catch (e) {
@@ -74,10 +80,10 @@ class _ReviewSheetState extends State<ReviewSheet> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
-        top: 20,
-        bottom: MediaQuery.viewInsetsOf(context).bottom + 20,
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.viewInsetsOf(context).bottom + 24,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -86,77 +92,59 @@ class _ReviewSheetState extends State<ReviewSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Write a Review',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF3A1E0B),
-                ),
+              Text(
+                'Rate Your Experience',
+                style: AppTypography.displayMedium.copyWith(fontSize: 20),
               ),
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded),
+                icon: const Icon(Icons.close_rounded, color: AppColors.textMuted),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(5, (index) {
-              final filled = index < _rating;
-              return IconButton(
-                iconSize: 36,
-                onPressed: () => setState(() {
-                  _rating = index + 1;
-                  _error = null;
-                }),
-                icon: Icon(
-                  filled ? Icons.star_rounded : Icons.star_border_rounded,
-                  color: const Color(0xFFF97316),
-                ),
-              );
-            }),
+          const SizedBox(height: 12),
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(5, (index) {
+                final filled = index < _rating;
+                return IconButton(
+                  iconSize: 38,
+                  onPressed: () => setState(() {
+                    _rating = index + 1;
+                    _error = null;
+                  }),
+                  icon: Icon(
+                    filled ? Icons.star_rounded : Icons.star_border_rounded,
+                    color: AppColors.primary,
+                  ),
+                );
+              }),
+            ),
           ),
-          const SizedBox(height: 8),
-          TextField(
+          const SizedBox(height: 16),
+          TextFormField(
             controller: _reviewController,
             maxLines: 4,
+            style: AppTypography.bodyLarge,
             decoration: InputDecoration(
-              hintText: 'Write your review',
-              filled: true,
-              fillColor: const Color(0xFFFFF5EC),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
+              hintText: 'Share your learning experience...',
+              fillColor: AppColors.background,
             ),
           ),
           if (_error != null) ...[
             const SizedBox(height: 8),
-            Text(_error!, style: const TextStyle(color: Colors.red)),
-          ],
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _submit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF97316),
-                foregroundColor: Colors.white,
-                minimumSize: const Size.fromHeight(50),
-              ),
-              child: _isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('Submit'),
+            Text(
+              _error!,
+              style: AppTypography.labelSmall.copyWith(color: AppColors.error),
             ),
+          ],
+          const SizedBox(height: 20),
+          AppPrimaryButton(
+            text: 'Submit Review',
+            isLoading: _isSubmitting,
+            icon: Icons.rate_review_outlined,
+            onPressed: _submit,
           ),
         ],
       ),

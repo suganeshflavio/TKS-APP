@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/theme/app_colors.dart';
 import '../widgets/review_sheet.dart';
 import 'courses_page.dart';
 import 'home_page.dart';
@@ -29,25 +30,43 @@ class _RootShellState extends State<RootShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: IndexedStack(index: _index, children: _pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: _onDestinationSelected,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_rounded), label: 'Home'),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_rounded),
-            label: 'Course',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: AppColors.softShadow,
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: NavigationBar(
+            selectedIndex: _index,
+            onDestinationSelected: _onDestinationSelected,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home_rounded),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.menu_book_outlined),
+                selectedIcon: Icon(Icons.menu_book_rounded),
+                label: 'Courses',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_outline_rounded),
+                selectedIcon: Icon(Icons.person_rounded),
+                label: 'Profile',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.rate_review_outlined),
+                selectedIcon: Icon(Icons.rate_review_rounded),
+                label: 'Review',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.person_rounded),
-            label: 'Profile',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.rate_review_rounded),
-            label: 'Review',
-          ),
-        ],
+        ),
       ),
     );
   }
