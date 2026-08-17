@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/theme/app_colors.dart';
 import '../models/dashboard_content.dart';
 
 class ProgressPage extends StatelessWidget {
@@ -11,9 +12,9 @@ class ProgressPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF6EE),
+      backgroundColor: AppColors.primarySubtle,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF6EE),
+        backgroundColor: AppColors.primarySubtle,
         foregroundColor: const Color(0xFF3A1E0B),
         elevation: 0,
         title: const Text('Progress'),
