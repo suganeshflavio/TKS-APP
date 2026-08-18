@@ -85,9 +85,7 @@ class _PdfViewerState extends State<PdfViewer> {
               swipeHorizontal: false,
               autoSpacing: true,
               pageFling: true,
-              onError: (error) {
-                debugPrint('PDFView error: $error');
-              },
+              onError: (error) {},
             );
           },
         ),

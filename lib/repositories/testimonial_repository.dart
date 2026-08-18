@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 import '../core/network/api_client.dart';
 import '../core/network/api_exception.dart';
@@ -33,19 +32,13 @@ class TestimonialRepository {
   }
 
   Future<List<Testimonial>> fetchPublicTestimonials() async {
-    debugPrint('[TestimonialRepository] GET /api/testimonials/public');
     try {
       final response = await _client.get('/api/testimonials/public');
-      debugPrint(
-        '[TestimonialRepository] success (${response.statusCode}): ${response.data}',
-      );
       return _parseTestimonials(response.data);
     } on DioException catch (e) {
       final error = mapDioError(e);
-      debugPrint('[TestimonialRepository] error: ${error.message}');
       throw error;
     } catch (e) {
-      debugPrint('[TestimonialRepository] unexpected error: $e');
       rethrow;
     }
   }

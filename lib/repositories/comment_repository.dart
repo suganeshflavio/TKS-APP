@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 import '../core/network/api_client.dart';
 import '../core/network/api_exception.dart';
@@ -11,19 +10,13 @@ class CommentRepository {
   final ApiClient _client;
 
   Future<List<Comment>> fetchComments(String videoId) async {
-    debugPrint('[CommentRepository] GET /api/comments/video/$videoId');
     try {
       final response = await _client.get('/api/comments/video/$videoId');
-      debugPrint(
-        '[CommentRepository] success (${response.statusCode}): ${response.data}',
-      );
       return _parseComments(response.data);
     } on DioException catch (e) {
       final error = mapDioError(e);
-      debugPrint('[CommentRepository] error: ${error.message}');
       throw error;
     } catch (e) {
-      debugPrint('[CommentRepository] unexpected error: $e');
       rethrow;
     }
   }
@@ -32,7 +25,6 @@ class CommentRepository {
     required String videoId,
     required String message,
   }) async {
-    debugPrint('[CommentRepository] POST /api/comments videoId=$videoId');
     try {
       await _client.post(
         '/api/comments',
@@ -40,7 +32,6 @@ class CommentRepository {
       );
     } on DioException catch (e) {
       final error = mapDioError(e);
-      debugPrint('[CommentRepository] post error: ${error.message}');
       throw error;
     }
   }

@@ -91,16 +91,10 @@ class SessionState extends ChangeNotifier {
       _user = data.user;
       await _storage.saveUser(data.user);
       _errorMessage = null;
-      debugPrint(
-        '[SessionState] user-access success: ${data.courses.length} '
-        'courses, mobile=${data.user.mobile}',
-      );
     } on ApiException catch (e) {
       _errorMessage = e.message;
-      debugPrint('[SessionState] user-access failed: ${e.message}');
     } catch (e) {
       _errorMessage = 'Unable to load courses.';
-      debugPrint('[SessionState] user-access unexpected error: $e');
     } finally {
       _isLoadingCourses = false;
       notifyListeners();

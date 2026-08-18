@@ -9,16 +9,41 @@ import '../widgets/custom_buttons.dart';
 import '../widgets/custom_card.dart';
 import 'login_page.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
-  Future<void> _handleLogout(BuildContext context) async {
-    await context.read<SessionState>().logout();
-    if (!context.mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-      (route) => false,
-    );
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  bool _isLoggingOut = false;
+
+  Future<void> _handleLogout() async {
+    if (_isLoggingOut) return;
+
+    setState(() => _isLoggingOut = true);
+
+    try {
+      await context.read<SessionState>().logout();
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+        (route) => false,
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoggingOut = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            content: const Text('Unable to sign out. Please try again.'),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -54,16 +79,6 @@ class ProfilePage extends StatelessWidget {
                           color: AppColors.primaryDark,
                         ),
                       ),
-                      // const SizedBox(height: 16),
-                      // Text(
-                      //   user?.name ?? 'Student Name',
-                      //   style: AppTypography.displayMedium.copyWith(fontSize: 22),
-                      // ),
-                      // const SizedBox(height: 4),
-                      // Text(
-                      //   user?.email ?? 'student@example.com',
-                      //   style: AppTypography.bodyMedium,
-                      // ),
                     ],
                   ),
                 ),
@@ -100,12 +115,13 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 AppPrimaryButton(
-                  text: 'Sign Out',
-                  icon: Icons.logout_rounded,
+                  text: _isLoggingOut ? 'Signing Out...' : 'Sign Out',
+                  icon: _isLoggingOut ? null : Icons.logout_rounded,
+                  isLoading: _isLoggingOut,
                   gradient: const LinearGradient(
                     colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
                   ),
-                  onPressed: () => _handleLogout(context),
+                  onPressed: _isLoggingOut ? null : _handleLogout,
                 ),
               ],
             ),

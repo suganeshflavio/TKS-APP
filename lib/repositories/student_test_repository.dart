@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 import '../core/network/api_client.dart';
 import '../core/network/api_exception.dart';
@@ -11,12 +10,8 @@ class StudentTestRepository {
   final ApiClient _client;
 
   Future<List<StudentTest>> fetchTestsByVideo(String videoId) async {
-    debugPrint('[StudentTestRepository] GET /api/tests/student/video/$videoId');
     try {
       final response = await _client.get('/api/tests/student/video/$videoId');
-      debugPrint(
-        '[StudentTestRepository] questions response: ${response.data}',
-      );
       final body = StudentTestListResponse.fromJson(
         response.data as Map<String, dynamic>,
       );
@@ -30,12 +25,8 @@ class StudentTestRepository {
   }
 
   Future<StudentTest> fetchTestById(String testId) async {
-    debugPrint('[StudentTestRepository] GET /api/tests/student/$testId');
     try {
       final response = await _client.get('/api/tests/student/$testId');
-      debugPrint(
-        '[StudentTestRepository] single test response: ${response.data}',
-      );
       final body = StudentTestResponse.fromJson(
         response.data as Map<String, dynamic>,
       );
@@ -56,8 +47,6 @@ class StudentTestRepository {
     required List<AttemptAnswer> answers,
     String status = 'COMPLETED',
   }) async {
-    debugPrint('[StudentTestRepository] POST /api/tests/$testId/attempts');
-
     final payload = {
       'videoId': videoId,
       'status': status,
@@ -69,12 +58,10 @@ class StudentTestRepository {
     };
 
     try {
-      debugPrint('[StudentTestRepository] submit payload: $payload');
       final response = await _client.post(
         '/api/tests/$testId/attempts',
         data: payload,
       );
-      debugPrint('[StudentTestRepository] submit response: ${response.data}');
       final body = SubmitAttemptResponse.fromJson(
         response.data as Map<String, dynamic>,
       );

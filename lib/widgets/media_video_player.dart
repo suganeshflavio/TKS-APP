@@ -36,16 +36,13 @@ class _MediaVideoPlayerState extends State<MediaVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    debugPrint('[MediaVideoPlayer] loading ${widget.videoUrl}');
     _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
       ..addListener(_onValueChanged)
       ..initialize()
           .then((_) {
-            debugPrint('[MediaVideoPlayer] initialized successfully');
             if (mounted) setState(() {});
           })
           .catchError((Object error, StackTrace stackTrace) {
-            debugPrint('[MediaVideoPlayer] initialize error: $error');
             if (mounted) setState(() => _hasError = true);
           });
     _scheduleAutoHide();

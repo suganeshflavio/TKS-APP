@@ -30,6 +30,8 @@ class _QuizPageState extends State<QuizPage> {
   StudentTest? _lastSubmittedTest;
   DateTime? _startedAt;
   bool _isSubmitting = false;
+  bool _isLoadingTest = false;
+  String? _loadingTestId;
   StudentAttemptResult? _result;
 
   final Map<String, String> _answersByQuestionId = <String, String>{};
@@ -42,6 +44,8 @@ class _QuizPageState extends State<QuizPage> {
 
   Future<void> _loadTest(String testId) async {
     setState(() {
+      _isLoadingTest = true;
+      _loadingTestId = testId;
       _activeTest = null;
       _startedAt = null;
       _result = null;
@@ -61,6 +65,13 @@ class _QuizPageState extends State<QuizPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingTest = false;
+          _loadingTestId = null;
+        });
+      }
     }
   }
 
@@ -232,6 +243,9 @@ class _QuizPageState extends State<QuizPage> {
                   final test = tests[index];
                   final isCompleted =
                       _result != null && _lastSubmittedTest?.id == test.id;
+                  final isThisTestLoading =
+                      _isLoadingTest && _loadingTestId == test.id;
+
                   return AppCard(
                     padding: const EdgeInsets.all(20),
                     child: Column(
@@ -266,9 +280,16 @@ class _QuizPageState extends State<QuizPage> {
                         ],
                         const SizedBox(height: 16),
                         AppPrimaryButton(
-                          text: isCompleted ? 'Retake MCQ' : 'Start MCQ',
-                          icon: Icons.play_arrow_rounded,
-                          onPressed: () => _loadTest(test.id),
+                          text: isThisTestLoading
+                              ? 'Loading Test...'
+                              : isCompleted
+                              ? 'Retake MCQ'
+                              : 'Start MCQ',
+                          icon: isThisTestLoading
+                              ? null
+                              : Icons.play_arrow_rounded,
+                          isLoading: isThisTestLoading,
+                          onPressed: _isLoadingTest ? null : () => _loadTest(test.id),
                         ),
                       ],
                     ),
