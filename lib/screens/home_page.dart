@@ -16,6 +16,8 @@ import '../widgets/brand_title.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/reviews_carousel.dart';
 import '../widgets/skeleton.dart';
+import 'about_page.dart';
+import 'contact_page.dart';
 import 'courses_page.dart';
 import 'subject_page.dart';
 
@@ -174,6 +176,30 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const CoursesPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.info_outline_rounded, color: AppColors.textSecondary),
+                      title: Text('About Us', style: AppTypography.titleMedium),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AboutPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.contact_support_outlined, color: AppColors.textSecondary),
+                      title: Text('Contact Us', style: AppTypography.titleMedium),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const ContactPage(),
                           ),
                         );
                       },
