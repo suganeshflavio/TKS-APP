@@ -19,6 +19,7 @@ import '../widgets/skeleton.dart';
 import 'about_page.dart';
 import 'contact_page.dart';
 import 'courses_page.dart';
+import 'privacy_policy_page.dart';
 import 'subject_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -200,6 +201,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => const ContactPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.privacy_tip_outlined, color: AppColors.textSecondary),
+                      title: Text('Privacy Policy', style: AppTypography.titleMedium),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const PrivacyPolicyPage(),
                           ),
                         );
                       },
