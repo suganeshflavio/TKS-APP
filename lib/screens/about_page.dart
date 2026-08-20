@@ -79,45 +79,45 @@ class AboutPage extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Key Statistics Grid
-                Text(
-                  'Our Impact in Numbers',
-                  style: AppTypography.titleLarge,
-                ),
-                const SizedBox(height: 12),
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.5,
-                  children: const [
-                    _StatCard(
-                      value: '50,000+',
-                      label: 'Active Students',
-                      icon: Icons.people_alt_rounded,
-                      color: AppColors.primary,
-                    ),
-                    _StatCard(
-                      value: '120+',
-                      label: 'Expert Courses',
-                      icon: Icons.school_rounded,
-                      color: AppColors.secondary,
-                    ),
-                    _StatCard(
-                      value: '98%',
-                      label: 'Pass Rate',
-                      icon: Icons.verified_rounded,
-                      color: AppColors.success,
-                    ),
-                    _StatCard(
-                      value: '4.9 ★',
-                      label: 'Student Rating',
-                      icon: Icons.star_rounded,
-                      color: AppColors.warning,
-                    ),
-                  ],
-                ),
+                // Text(
+                //   'Our Impact in Numbers',
+                //   style: AppTypography.titleLarge,
+                // ),
+                // const SizedBox(height: 12),
+                // GridView.count(
+                //   crossAxisCount: 2,
+                //   shrinkWrap: true,
+                //   physics: const NeverScrollableScrollPhysics(),
+                //   mainAxisSpacing: 12,
+                //   crossAxisSpacing: 12,
+                //   childAspectRatio: 1.5,
+                //   children: const [
+                //     _StatCard(
+                //       value: '50,000+',
+                //       label: 'Active Students',
+                //       icon: Icons.people_alt_rounded,
+                //       color: AppColors.primary,
+                //     ),
+                //     _StatCard(
+                //       value: '120+',
+                //       label: 'Expert Courses',
+                //       icon: Icons.school_rounded,
+                //       color: AppColors.secondary,
+                //     ),
+                //     _StatCard(
+                //       value: '98%',
+                //       label: 'Pass Rate',
+                //       icon: Icons.verified_rounded,
+                //       color: AppColors.success,
+                //     ),
+                //     _StatCard(
+                //       value: '4.9 ★',
+                //       label: 'Student Rating',
+                //       icon: Icons.star_rounded,
+                //       color: AppColors.warning,
+                //     ),
+                //   ],
+                // ),
                 const SizedBox(height: 24),
 
                 // Mission & Vision Cards
