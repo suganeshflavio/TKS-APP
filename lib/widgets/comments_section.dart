@@ -109,8 +109,8 @@ class _CommentsSectionState extends State<CommentsSection> {
 
               return ListView.separated(
                 itemCount: comments.length,
-                padding: const EdgeInsets.only(bottom: 12),
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                padding: const EdgeInsets.only(bottom: 6),
+                separatorBuilder: (_, _) => const SizedBox(height: 6),
                 itemBuilder: (context, index) =>
                     _CommentTile(comment: comments[index]),
               );
@@ -119,8 +119,8 @@ class _CommentsSectionState extends State<CommentsSection> {
         ),
         Padding(
           padding: EdgeInsets.only(
-            top: 8,
-            bottom: safeBottomInset > 0 ? safeBottomInset : 8,
+            top: 6,
+            bottom: safeBottomInset > 0 ? safeBottomInset : 6,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -128,36 +128,38 @@ class _CommentsSectionState extends State<CommentsSection> {
               Expanded(
                 child: TextField(
                   controller: _messageController,
+                  style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
                   textInputAction: TextInputAction.send,
                   onSubmitted: (_) => _isPosting ? null : _postComment(),
                   decoration: InputDecoration(
                     isDense: true,
                     hintText: 'Add a comment...',
+                    hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
                     filled: true,
                     fillColor: Colors.white,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
+                      horizontal: 14,
+                      vertical: 8,
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(18),
                       borderSide: const BorderSide(color: AppColors.cardBorder),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(18),
                       borderSide: const BorderSide(color: AppColors.cardBorder),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: const BorderSide(color: AppColors.primary, width: 1.8),
+                      borderRadius: BorderRadius.circular(18),
+                      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Container(
-                width: 44,
-                height: 44,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   color: AppColors.primary,
                   shape: BoxShape.circle,
@@ -169,14 +171,14 @@ class _CommentsSectionState extends State<CommentsSection> {
                   color: Colors.white,
                   icon: _isPosting
                       ? const SizedBox(
-                          height: 18,
-                          width: 18,
+                          height: 14,
+                          width: 14,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
+                            strokeWidth: 1.5,
                             color: Colors.white,
                           ),
                         )
-                      : const Icon(Icons.send_rounded, size: 20),
+                      : const Icon(Icons.send_rounded, size: 16),
                 ),
               ),
             ],
@@ -196,45 +198,52 @@ class _CommentTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: depth * 24.0, bottom: 8),
+      padding: EdgeInsets.only(left: depth * 14.0, bottom: 4),
       child: AppCard(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 CircleAvatar(
-                  radius: 14,
+                  radius: 11,
                   backgroundColor: AppColors.primaryLight,
                   child: Text(
                     comment.authorName.isNotEmpty
                         ? comment.authorName[0].toUpperCase()
                         : '?',
                     style: const TextStyle(
+                      fontSize: 10,
                       color: AppColors.primaryDark,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Text(
                   comment.authorName,
-                  style: AppTypography.titleMedium.copyWith(fontSize: 14),
+                  style: AppTypography.titleMedium.copyWith(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 if (comment.createdAt != null) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Text(
                     _formatTime(comment.createdAt!),
-                    style: AppTypography.labelSmall,
+                    style: AppTypography.labelSmall.copyWith(fontSize: 10),
                   ),
                 ],
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               comment.message,
-              style: AppTypography.bodyMedium,
+              style: AppTypography.bodyMedium.copyWith(
+                fontSize: 11.5,
+                height: 1.3,
+              ),
             ),
             ...comment.replies.map(
               (reply) => _CommentTile(comment: reply, depth: depth + 1),

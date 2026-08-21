@@ -340,31 +340,29 @@ class CommentListSkeleton extends StatelessWidget {
       child: Column(
         children: List.generate(itemCount, (index) {
           return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFFFEAD8)),
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Skeleton(
-                  width: 36,
-                  height: 36,
+                  width: 22,
+                  height: 22,
                   shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Skeleton(width: 120, height: 14, borderRadius: 4),
-                      SizedBox(height: 6),
-                      Skeleton(width: double.infinity, height: 12, borderRadius: 4),
+                      Skeleton(width: 90, height: 11, borderRadius: 4),
                       SizedBox(height: 4),
-                      Skeleton(width: 180, height: 12, borderRadius: 4),
+                      Skeleton(width: double.infinity, height: 10, borderRadius: 4),
                     ],
                   ),
                 ),

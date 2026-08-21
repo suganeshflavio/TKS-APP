@@ -171,9 +171,11 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                           if (!isKeyboardOpen) ...[
                             Text(
                               'Discussion & Comments',
-                              style: AppTypography.titleMedium,
+                              style: AppTypography.titleMedium.copyWith(
+                                fontSize: 13,
+                              ),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 4),
                           ],
                           Expanded(child: CommentsSection(videoId: video.id)),
                         ],
