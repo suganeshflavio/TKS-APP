@@ -10,7 +10,9 @@ import '../widgets/brand_title.dart';
 import '../widgets/custom_buttons.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/custom_text_field.dart';
+import 'forgot_password_page.dart';
 import 'root_shell.dart';
+import 'signup_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -136,7 +138,33 @@ class _LoginPageState extends State<LoginPage> {
                               ? 'Please enter your password'
                               : null,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const ForgotPasswordPage(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'Forgot Password?',
+                              style: AppTypography.labelLarge.copyWith(
+                                color: AppColors.primaryDark,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
                         AppPrimaryButton(
                           text: 'Sign In',
                           isLoading: isLoggingIn,
@@ -144,6 +172,32 @@ class _LoginPageState extends State<LoginPage> {
                           height: 50,
                           onPressed: _handleSubmit,
                         ),
+                        // const SizedBox(height: 20),
+                        // Row(
+                        //   mainAxisAlignment: MainAxisAlignment.center,
+                        //   children: [
+                        //     Text(
+                        //       "Don't have an account? ",
+                        //       style: AppTypography.bodyMedium,
+                        //     ),
+                        //     GestureDetector(
+                        //       onTap: () {
+                        //         Navigator.of(context).push(
+                        //           MaterialPageRoute(
+                        //             builder: (_) => const SignupPage(),
+                        //           ),
+                        //         );
+                        //       },
+                        //       child: Text(
+                        //         'Sign Up',
+                        //         style: AppTypography.labelLarge.copyWith(
+                        //           color: AppColors.primaryDark,
+                        //           fontWeight: FontWeight.w700,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     ),
                   ),

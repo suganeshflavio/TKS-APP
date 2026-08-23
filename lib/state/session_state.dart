@@ -78,6 +78,36 @@ class SessionState extends ChangeNotifier {
     }
   }
 
+  Future<bool> register({
+    required String name,
+    required String email,
+    required String mobile,
+    required String className,
+    required String password,
+  }) async {
+    _isLoggingIn = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final deviceId = await getDeviceId();
+      await _authRepository.register(
+        name: name,
+        email: email,
+        mobile: mobile,
+        className: className,
+        password: password,
+        deviceId: deviceId,
+      );
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      return false;
+    } finally {
+      _isLoggingIn = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> loadUserAccess({
     required String userId,
     bool forceRefresh = false,
