@@ -6,6 +6,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
 import '../models/dashboard_content.dart';
 import '../models/testimonial.dart';
+import '../models/user_access_models.dart';
 import '../repositories/dashboard_repository.dart';
 import '../repositories/testimonial_repository.dart';
 import '../state/session_state.dart';
@@ -18,6 +19,8 @@ import '../widgets/reviews_carousel.dart';
 import '../widgets/skeleton.dart';
 import 'about_page.dart';
 import 'contact_page.dart';
+import 'course_mcq_tests_page.dart';
+import 'course_notes_page.dart';
 import 'courses_page.dart';
 import 'privacy_policy_page.dart';
 import 'subject_page.dart';
@@ -370,13 +373,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                           padding: const EdgeInsets.only(bottom: 14),
                           child: AppCard(
                             padding: const EdgeInsets.all(16),
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => SubjectPage(course: course),
-                                ),
-                              );
-                            },
+                            onTap: () => _openCourse(context, course),
                             child: Row(
                               children: [
                                 Container(
@@ -405,7 +402,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        '${course.subjects.length} subjects • ${course.chapterCount} chapters',
+                                        [
+                                          if (course.videos.isNotEmpty)
+                                            '${course.videos.length} videos',
+                                          if (course.notes.isNotEmpty)
+                                            '${course.notes.length} notes',
+                                          if (course.mcqTests.isNotEmpty)
+                                            '${course.mcqTests.length} MCQ tests',
+                                        ].join(' • '),
                                         style: AppTypography.labelSmall,
                                       ),
                                     ],
@@ -455,5 +459,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+}
+
+void _openCourse(BuildContext context, UserCourse course) {
+  switch (course.category) {
+    case CourseCategory.notes:
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => CourseNotesPage(course: course)),
+      );
+    case CourseCategory.test:
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => CourseMcqTestsPage(course: course)),
+      );
+    case CourseCategory.video:
+    case CourseCategory.mixed:
+    case CourseCategory.empty:
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => SubjectPage(course: course)),
+      );
   }
 }

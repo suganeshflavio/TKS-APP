@@ -2,17 +2,17 @@ import 'package:dio/dio.dart';
 
 import '../core/network/api_client.dart';
 import '../core/network/api_exception.dart';
-import '../models/video_lesson.dart';
+import '../models/notes_item.dart';
 
-class VideoRepository {
-  VideoRepository(this._client);
+class NotesRepository {
+  NotesRepository(this._client);
 
   final ApiClient _client;
 
-  Future<VideoLesson> fetchVideoById(String videoId) async {
+  Future<NotesItem> fetchNotesById(String notesId) async {
     try {
-      final response = await _client.get('/api/videos/$videoId');
-      final body = VideoResponse.fromJson(
+      final response = await _client.get('/api/notes/$notesId');
+      final body = NotesResponse.fromJson(
         response.data as Map<String, dynamic>,
       );
       if (!body.success || body.data == null) {

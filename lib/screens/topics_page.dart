@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../core/network/api_client.dart';
 import '../core/network/api_exception.dart';
@@ -8,28 +7,40 @@ import '../core/theme/app_typography.dart';
 import '../models/catalog_models.dart';
 import '../models/user_access_models.dart';
 import '../repositories/catalog_repository.dart';
-import '../state/session_state.dart';
 import '../widgets/app_background.dart';
 import '../widgets/custom_buttons.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/inline_search_field.dart';
 import '../widgets/skeleton.dart';
-import 'chapter_page.dart';
+import 'topic_detail_page.dart';
 
-class SubjectPage extends StatefulWidget {
-  const SubjectPage({super.key, required this.course});
-
-  final UserCourse course;
-
-  @override
-  State<SubjectPage> createState() => _SubjectPageState();
+/// One topic filtered down to only the content this student's course grant
+/// actually covers.
+class _GrantedTopic {
+  const _GrantedTopic(this.detail);
+  final TopicDetail detail;
 }
 
-class _SubjectPageState extends State<SubjectPage> {
+class TopicsPage extends StatefulWidget {
+  const TopicsPage({
+    super.key,
+    required this.course,
+    required this.chapterId,
+    required this.chapterName,
+  });
+
+  final UserCourse course;
+  final String chapterId;
+  final String chapterName;
+
+  @override
+  State<TopicsPage> createState() => _TopicsPageState();
+}
+
+class _TopicsPageState extends State<TopicsPage> {
   final _repository = CatalogRepository(ApiClient());
-  late Future<List<SubjectItem>> _future;
+  late Future<List<_GrantedTopic>> _future;
   String _query = '';
-  String? _resolvingSubjectId;
 
   @override
   void initState() {
@@ -37,58 +48,51 @@ class _SubjectPageState extends State<SubjectPage> {
     _future = _load();
   }
 
-  Future<List<SubjectItem>> _load() {
-    return _repository.fetchCourseSubjects(widget.course.courseId);
+  Future<List<_GrantedTopic>> _load() async {
+    final topics = await _repository.fetchTopics(widget.chapterId);
+    final grantedVideoIds = widget.course.grantedVideoIds;
+    final grantedNotesIds = widget.course.grantedNotesIds;
+    final grantedTestIds = widget.course.grantedTestIds;
+
+    final details = await Future.wait(
+      topics.map((topic) => _repository.fetchTopicById(topic.id)),
+    );
+
+    return details
+        .map((detail) {
+          final videos = detail.videos
+              .where((v) => grantedVideoIds.contains(v.id))
+              .toList();
+          final notes = detail.notes
+              .where((n) => grantedNotesIds.contains(n.id))
+              .toList();
+          final mcqTests = detail.mcqTests
+              .where((t) => grantedTestIds.contains(t.id))
+              .toList();
+          return _GrantedTopic(
+            TopicDetail(
+              id: detail.id,
+              name: detail.name,
+              videos: videos,
+              notes: notes,
+              mcqTests: mcqTests,
+            ),
+          );
+        })
+        .where((t) => t.detail.hasAnyContent)
+        .toList();
   }
 
   void _retry() => setState(() => _future = _load());
-
-  Future<void> _openSubject(SubjectItem subject) async {
-    setState(() => _resolvingSubjectId = subject.id);
-    try {
-      final classes = await _repository.fetchClasses(subject.id);
-      if (!mounted) return;
-      if (classes.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No classes found for this subject.')),
-        );
-        return;
-      }
-
-      final className = context.read<SessionState>().user?.className;
-      final resolved = className == null
-          ? classes.first
-          : classes.firstWhere(
-              (c) => c.name.trim().toLowerCase() == className.trim().toLowerCase(),
-              orElse: () => classes.first,
-            );
-
-      if (!mounted) return;
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ChapterPage(
-            course: widget.course,
-            classId: resolved.id,
-            subjectName: subject.name,
-          ),
-        ),
-      );
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-    } finally {
-      if (mounted) setState(() => _resolvingSubjectId = null);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.course.courseName),
+        title: Text(widget.chapterName),
       ),
       body: AppBackground(
-        child: FutureBuilder<List<SubjectItem>>(
+        child: FutureBuilder<List<_GrantedTopic>>(
           future: _future,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
@@ -98,7 +102,7 @@ class _SubjectPageState extends State<SubjectPage> {
             if (snapshot.hasError) {
               final message = snapshot.error is ApiException
                   ? (snapshot.error as ApiException).message
-                  : 'Unable to load subjects.';
+                  : 'Unable to load topics.';
               return Center(
                 child: AppCard(
                   padding: const EdgeInsets.all(28),
@@ -124,9 +128,9 @@ class _SubjectPageState extends State<SubjectPage> {
               );
             }
 
-            final subjects = (snapshot.data ?? [])
+            final topics = (snapshot.data ?? [])
                 .where(
-                  (subject) => subject.name.toLowerCase().contains(
+                  (t) => t.detail.name.toLowerCase().contains(
                     _query.trim().toLowerCase(),
                   ),
                 )
@@ -136,11 +140,11 @@ class _SubjectPageState extends State<SubjectPage> {
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               children: [
                 InlineSearchField(
-                  hintText: 'Search subjects...',
+                  hintText: 'Search topics...',
                   onChanged: (value) => setState(() => _query = value),
                 ),
                 const SizedBox(height: 18),
-                if (subjects.isEmpty)
+                if (topics.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 40),
                     child: Center(
@@ -150,13 +154,13 @@ class _SubjectPageState extends State<SubjectPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(
-                              Icons.search_off_rounded,
+                              Icons.video_library_outlined,
                               size: 44,
                               color: AppColors.textMuted,
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'No subjects found.',
+                              'No topics available in this chapter yet.',
                               style: AppTypography.bodyMedium,
                               textAlign: TextAlign.center,
                             ),
@@ -166,47 +170,64 @@ class _SubjectPageState extends State<SubjectPage> {
                     ),
                   )
                 else
-                  ...subjects.map((subject) {
-                    final isResolving = _resolvingSubjectId == subject.id;
+                  ...topics.map((topic) {
+                    final detail = topic.detail;
+                    final subtitleParts = <String>[
+                      if (detail.videos.isNotEmpty) '${detail.videos.length} video',
+                      if (detail.notes.isNotEmpty) '${detail.notes.length} notes',
+                      if (detail.mcqTests.isNotEmpty) '${detail.mcqTests.length} MCQ',
+                    ];
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 14),
                       child: AppCard(
                         padding: const EdgeInsets.all(18),
-                        onTap: isResolving ? null : () => _openSubject(subject),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => TopicDetailPage(topic: detail),
+                            ),
+                          );
+                        },
                         child: Row(
                           children: [
                             Container(
                               width: 48,
                               height: 48,
                               decoration: BoxDecoration(
-                                color: AppColors.secondaryLight,
+                                color: AppColors.primaryLight,
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: const Icon(
-                                Icons.topic_outlined,
-                                color: AppColors.secondaryDark,
-                                size: 24,
+                                Icons.play_arrow_rounded,
+                                color: AppColors.primaryDark,
+                                size: 28,
                               ),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
-                              child: Text(
-                                subject.name,
-                                style: AppTypography.titleMedium,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    detail.name,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTypography.titleMedium,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    subtitleParts.join(' • '),
+                                    style: AppTypography.labelSmall,
+                                  ),
+                                ],
                               ),
                             ),
-                            if (isResolving)
-                              const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            else
-                              const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                color: AppColors.textMuted,
-                                size: 16,
-                              ),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              color: AppColors.textMuted,
+                              size: 16,
+                            ),
                           ],
                         ),
                       ),
