@@ -1,5 +1,6 @@
 /// The browsable content hierarchy: Subject -> Class -> Chapter -> Topic.
 /// A Topic optionally links a Video, Notes, and/or an MCQ test.
+library;
 
 class SubjectItem {
   const SubjectItem({required this.id, required this.name});

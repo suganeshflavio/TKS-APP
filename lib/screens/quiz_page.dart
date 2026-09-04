@@ -9,6 +9,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
 import '../widgets/app_background.dart';
 import '../widgets/custom_card.dart';
+import '../widgets/formatted_content_view.dart';
 
 /// A single MCQ test, one question per screen. Reached either directly by
 /// [testId] (the flat "MCQ Test" course category, or a topic's MCQ tile).
@@ -274,13 +275,15 @@ class _QuestionPager extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      question.question,
-                      style: const TextStyle(
+                    FormattedContentView(
+                      content: question.question,
+                      textStyle: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF3A1E0B),
+                        height: 1.4,
                       ),
+                      mathFontSize: 17,
                     ),
                     const SizedBox(height: 14),
                     ...question.options.entries.map((entry) {
@@ -308,24 +311,48 @@ class _QuestionPager extends StatelessWidget {
                               ),
                             ),
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  isSelected
-                                      ? Icons.radio_button_checked
-                                      : Icons.radio_button_off,
-                                  color: isSelected
-                                      ? const Color(0xFFF97316)
-                                      : const Color(0xFF8F6A4D),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Icon(
+                                    isSelected
+                                        ? Icons.radio_button_checked
+                                        : Icons.radio_button_off,
+                                    color: isSelected
+                                        ? const Color(0xFFF97316)
+                                        : const Color(0xFF8F6A4D),
+                                  ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
-                                  child: Text(
-                                    '${entry.key}. ${entry.value}',
-                                    style: TextStyle(
-                                      color: isSelected
-                                          ? const Color(0xFFB33A3A)
-                                          : const Color(0xFF3A1E0B),
-                                    ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${entry.key}. ',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 15,
+                                          color: isSelected
+                                              ? const Color(0xFFF97316)
+                                              : const Color(0xFF3A1E0B),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: FormattedContentView(
+                                          content: entry.value,
+                                          textStyle: TextStyle(
+                                            color: isSelected
+                                                ? const Color(0xFFB33A3A)
+                                                : const Color(0xFF3A1E0B),
+                                            fontSize: 15,
+                                            height: 1.35,
+                                          ),
+                                          mathFontSize: 15.5,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -472,12 +499,30 @@ class _SubmittedResultView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Q${index + 1}. ${question.question}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF3A1E0B),
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Q${index + 1}. ',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: Color(0xFF3A1E0B),
+                      ),
+                    ),
+                    Expanded(
+                      child: FormattedContentView(
+                        content: question.question,
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: Color(0xFF3A1E0B),
+                          height: 1.35,
+                        ),
+                        mathFontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 ...question.options.entries.map((entry) {
@@ -512,29 +557,51 @@ class _SubmittedResultView extends StatelessWidget {
                         border: Border.all(color: borderColor),
                       ),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            isCorrectChoice
-                                ? Icons.check_circle_rounded
-                                : isSelected
-                                ? Icons.radio_button_checked
-                                : Icons.radio_button_off,
-                            color: isCorrectChoice
-                                ? const Color(0xFF2EAE66)
-                                : isSelected
-                                ? const Color(0xFFE75F5F)
-                                : const Color(0xFF8F6A4D),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Icon(
+                              isCorrectChoice
+                                  ? Icons.check_circle_rounded
+                                  : isSelected
+                                  ? Icons.radio_button_checked
+                                  : Icons.radio_button_off,
+                              color: isCorrectChoice
+                                  ? const Color(0xFF2EAE66)
+                                  : isSelected
+                                  ? const Color(0xFFE75F5F)
+                                  : const Color(0xFF8F6A4D),
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              '${entry.key}. ${entry.value}',
-                              style: TextStyle(
-                                color: textColor,
-                                fontWeight: isCorrectChoice
-                                    ? FontWeight.w700
-                                    : FontWeight.normal,
-                              ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${entry.key}. ',
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14.5,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: FormattedContentView(
+                                    content: entry.value,
+                                    textStyle: TextStyle(
+                                      color: textColor,
+                                      fontWeight: isCorrectChoice
+                                          ? FontWeight.w700
+                                          : FontWeight.normal,
+                                      fontSize: 14.5,
+                                      height: 1.35,
+                                    ),
+                                    mathFontSize: 15,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -577,9 +644,28 @@ class _SubmittedResultView extends StatelessWidget {
                           : const Color(0xFFE9F9EF),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      'Explanation: $explanation',
-                      style: const TextStyle(color: Color(0xFF3A1E0B)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Explanation:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            color: Color(0xFF3A1E0B),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        FormattedContentView(
+                          content: explanation,
+                          textStyle: const TextStyle(
+                            color: Color(0xFF3A1E0B),
+                            fontSize: 14,
+                            height: 1.35,
+                          ),
+                          mathFontSize: 15,
+                        ),
+                      ],
                     ),
                   ),
                 ],
