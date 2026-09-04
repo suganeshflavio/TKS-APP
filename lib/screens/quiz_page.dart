@@ -506,7 +506,7 @@ class _SubmittedResultView extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 ...question.options.entries.map((entry) {
                   final isSelected = selected == entry.key;
                   final isCorrectChoice = entry.key == correct;
@@ -527,7 +527,7 @@ class _SubmittedResultView extends StatelessWidget {
                       : const Color(0xFF3A1E0B);
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.only(bottom: 10),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,

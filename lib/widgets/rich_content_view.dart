@@ -20,7 +20,7 @@ class RichContentView extends StatefulWidget {
     super.key,
     required this.html,
     this.style,
-    this.minHeight = 20,
+    this.minHeight = 28,
   });
 
   final String html;
@@ -47,7 +47,11 @@ class _RichContentViewState extends State<RichContentView> {
   @override
   void didUpdateWidget(covariant RichContentView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.html != widget.html && _looksLikeHtml && _isReady) {
+    if ((oldWidget.html != widget.html ||
+            oldWidget.style?.color != widget.style?.color ||
+            oldWidget.style?.fontSize != widget.style?.fontSize) &&
+        _looksLikeHtml &&
+        _isReady) {
       _injectContent();
     }
   }
@@ -82,8 +86,21 @@ class _RichContentViewState extends State<RichContentView> {
     if (controller == null) return;
     final sanitized = sanitizeRichHtml(widget.html);
     final encoded = jsonEncode(sanitized);
+
+    final color = widget.style?.color;
+    final colorHex = color != null
+        ? '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}'
+        : null;
+    final colorJs = colorHex != null
+        ? 'document.body.style.color = "$colorHex";'
+        : '';
+    final fontSize = widget.style?.fontSize;
+    final fontJs = fontSize != null
+        ? 'document.body.style.fontSize = "${fontSize}px";'
+        : '';
+
     await controller.runJavaScript(
-      'document.getElementById("content").innerHTML = $encoded; postHeight();',
+      '$colorJs $fontJs document.getElementById("content").innerHTML = $encoded; postHeight();',
     );
   }
 
@@ -100,8 +117,12 @@ class _RichContentViewState extends State<RichContentView> {
     final controller = _controller;
     if (controller == null) return const SizedBox.shrink();
 
+    // KaTeX subscripts extend below the line box baseline. Adding an 8px safety
+    // buffer ensures the Android WebView never clips subscripts (2, 3) or descenders.
+    final safeHeight = _height <= 0 ? widget.minHeight : (_height + 8);
+
     return SizedBox(
-      height: _height <= 0 ? widget.minHeight : _height,
+      height: safeHeight,
       child: IgnorePointer(
         child: WebViewWidget(controller: controller),
       ),

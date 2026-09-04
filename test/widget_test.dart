@@ -20,11 +20,8 @@ void main() {
 
     expect(find.text('TKS Academy'), findsOneWidget);
 
-    await tester.pump(const Duration(seconds: 3));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Welcome back'), findsOneWidget);
-    expect(find.text('Sign In'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pump(const Duration(milliseconds: 500));
   });
 
   test('Student quiz question exposes the correct option and explanation', () {

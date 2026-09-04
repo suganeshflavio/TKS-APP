@@ -1,3 +1,6 @@
+/// Domain models for the course catalog, content structures, and playback.
+library;
+
 /// The browsable content hierarchy: Subject -> Class -> Chapter -> Topic.
 /// A Topic optionally links a Video, Notes, and/or an MCQ test.
 
