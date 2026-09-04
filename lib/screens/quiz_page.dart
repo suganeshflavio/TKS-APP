@@ -9,6 +9,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_typography.dart';
 import '../widgets/app_background.dart';
 import '../widgets/custom_card.dart';
+import '../widgets/rich_content_view.dart';
 
 /// A single MCQ test, one question per screen. Reached either directly by
 /// [testId] (the flat "MCQ Test" course category, or a topic's MCQ tile).
@@ -274,8 +275,8 @@ class _QuestionPager extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      question.question,
+                    RichContentView(
+                      html: question.question,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -308,6 +309,7 @@ class _QuestionPager extends StatelessWidget {
                               ),
                             ),
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Icon(
                                   isSelected
@@ -318,9 +320,19 @@ class _QuestionPager extends StatelessWidget {
                                       : const Color(0xFF8F6A4D),
                                 ),
                                 const SizedBox(width: 10),
+                                Text(
+                                  '${entry.key}.',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: isSelected
+                                        ? const Color(0xFFB33A3A)
+                                        : const Color(0xFF3A1E0B),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
                                 Expanded(
-                                  child: Text(
-                                    '${entry.key}. ${entry.value}',
+                                  child: RichContentView(
+                                    html: entry.value,
                                     style: TextStyle(
                                       color: isSelected
                                           ? const Color(0xFFB33A3A)
@@ -472,12 +484,27 @@ class _SubmittedResultView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Q${index + 1}. ${question.question}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF3A1E0B),
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Q${index + 1}.',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF3A1E0B),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: RichContentView(
+                        html: question.question,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF3A1E0B),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 ...question.options.entries.map((entry) {
@@ -512,6 +539,7 @@ class _SubmittedResultView extends StatelessWidget {
                         border: Border.all(color: borderColor),
                       ),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(
                             isCorrectChoice
@@ -526,9 +554,19 @@ class _SubmittedResultView extends StatelessWidget {
                                 : const Color(0xFF8F6A4D),
                           ),
                           const SizedBox(width: 10),
+                          Text(
+                            '${entry.key}.',
+                            style: TextStyle(
+                              color: textColor,
+                              fontWeight: isCorrectChoice
+                                  ? FontWeight.w700
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
                           Expanded(
-                            child: Text(
-                              '${entry.key}. ${entry.value}',
+                            child: RichContentView(
+                              html: entry.value,
                               style: TextStyle(
                                 color: textColor,
                                 fontWeight: isCorrectChoice
@@ -577,9 +615,24 @@ class _SubmittedResultView extends StatelessWidget {
                           : const Color(0xFFE9F9EF),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      'Explanation: $explanation',
-                      style: const TextStyle(color: Color(0xFF3A1E0B)),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Explanation:',
+                          style: TextStyle(
+                            color: Color(0xFF3A1E0B),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: RichContentView(
+                            html: explanation,
+                            style: const TextStyle(color: Color(0xFF3A1E0B)),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
