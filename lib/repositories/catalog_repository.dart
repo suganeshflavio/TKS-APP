@@ -39,16 +39,50 @@ class CatalogRepository {
     }
   }
 
-  /// Subjects linked to a specific course, via `GET /api/courses/:id`.
-  Future<List<SubjectItem>> fetchCourseSubjects(String courseId) async {
+  /// Subjects linked to a specific course, via `GET /api/courses/:id`,
+  /// grouped by subject so a subject linked to several classes (a bundled
+  /// course) still appears once with all of its class links attached.
+  Future<List<CourseSubjectGroup>> fetchCourseSubjects(String courseId) async {
     try {
       final response = await _client.get('/api/courses/$courseId');
       final data = _dataOf(response.data);
       final links = data?['subjects'] as List<dynamic>? ?? const [];
-      return links
-          .map((e) => (e as Map<String, dynamic>)['subject'])
-          .whereType<Map<String, dynamic>>()
-          .map(SubjectItem.fromJson)
+
+      final order = <String>[];
+      final groups = <String, List<CourseSubjectClassLink>>{};
+      final names = <String, String>{};
+
+      for (final raw in links) {
+        if (raw is! Map<String, dynamic>) continue;
+        final subject = raw['subject'];
+        if (subject is! Map<String, dynamic>) continue;
+        final subjectId = subject['id'] as String? ?? '';
+        if (subjectId.isEmpty) continue;
+
+        final classMap = raw['class'];
+        final classLink = classMap is Map<String, dynamic>
+            ? CourseSubjectClassLink(
+                classId: classMap['id'] as String?,
+                className: classMap['name'] as String?,
+              )
+            : const CourseSubjectClassLink();
+
+        if (!groups.containsKey(subjectId)) {
+          order.add(subjectId);
+          groups[subjectId] = [];
+          names[subjectId] = subject['name'] as String? ?? '';
+        }
+        groups[subjectId]!.add(classLink);
+      }
+
+      return order
+          .map(
+            (subjectId) => CourseSubjectGroup(
+              subjectId: subjectId,
+              subjectName: names[subjectId] ?? '',
+              classLinks: groups[subjectId]!,
+            ),
+          )
           .toList();
     } on DioException catch (e) {
       throw mapDioError(e);

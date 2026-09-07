@@ -66,6 +66,31 @@ class TopicItem {
   );
 }
 
+/// One of a course's Subject↔Class links (`CourseSubject`). `classId` null
+/// means the link is unrestricted — the app auto-resolves the class from
+/// the student's own profile, same as before this feature existed.
+class CourseSubjectClassLink {
+  const CourseSubjectClassLink({this.classId, this.className});
+
+  final String? classId;
+  final String? className;
+}
+
+/// A subject linked to a course, grouped with every Class it was explicitly
+/// scoped to (a course can link the same subject more than once to bundle
+/// several grades — e.g. a combined 9th/10th English course).
+class CourseSubjectGroup {
+  const CourseSubjectGroup({
+    required this.subjectId,
+    required this.subjectName,
+    required this.classLinks,
+  });
+
+  final String subjectId;
+  final String subjectName;
+  final List<CourseSubjectClassLink> classLinks;
+}
+
 class TopicContentRef {
   const TopicContentRef({required this.id, required this.name});
 

@@ -27,7 +27,7 @@ class SubjectPage extends StatefulWidget {
 
 class _SubjectPageState extends State<SubjectPage> {
   final _repository = CatalogRepository(ApiClient());
-  late Future<List<SubjectItem>> _future;
+  late Future<List<CourseSubjectGroup>> _future;
   String _query = '';
   String? _resolvingSubjectId;
 
@@ -37,42 +37,127 @@ class _SubjectPageState extends State<SubjectPage> {
     _future = _load();
   }
 
-  Future<List<SubjectItem>> _load() {
+  Future<List<CourseSubjectGroup>> _load() {
     return _repository.fetchCourseSubjects(widget.course.courseId);
   }
 
   void _retry() => setState(() => _future = _load());
 
-  Future<void> _openSubject(SubjectItem subject) async {
-    setState(() => _resolvingSubjectId = subject.id);
-    try {
-      final classes = await _repository.fetchClasses(subject.id);
-      if (!mounted) return;
-      if (classes.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No classes found for this subject.')),
+  void _openChapters(String classId, String subjectName) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChapterPage(
+          course: widget.course,
+          classId: classId,
+          subjectName: subjectName,
+        ),
+      ),
+    );
+  }
+
+  /// Auto-resolves the Class from the student's profile — the legacy path,
+  /// used when this subject was linked to the course without pinning it to
+  /// a specific class.
+  Future<void> _autoResolveAndOpen(CourseSubjectGroup subject) async {
+    final classes = await _repository.fetchClasses(subject.subjectId);
+    if (!mounted) return;
+    if (classes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No classes found for this subject.')),
+      );
+      return;
+    }
+
+    final className = context.read<SessionState>().user?.className;
+    final resolved = className == null
+        ? classes.first
+        : classes.firstWhere(
+            (c) => c.name.trim().toLowerCase() == className.trim().toLowerCase(),
+            orElse: () => classes.first,
+          );
+
+    _openChapters(resolved.id, subject.subjectName);
+  }
+
+  Future<void> _pickClassAndOpen(
+    CourseSubjectGroup subject,
+    List<CourseSubjectClassLink> options,
+  ) async {
+    final chosen = await showModalBottomSheet<CourseSubjectClassLink>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${subject.subjectName} — Choose a class', style: AppTypography.titleLarge.copyWith(fontSize: 17)),
+                const SizedBox(height: 4),
+                Text(
+                  'This course covers more than one class for this subject.',
+                  style: AppTypography.labelSmall,
+                ),
+                const SizedBox(height: 16),
+                ...options.map(
+                  (option) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: AppCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      onTap: () => Navigator.of(sheetContext).pop(option),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              option.className ?? 'Class',
+                              style: AppTypography.titleMedium,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: AppColors.textMuted,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
+      },
+    );
+
+    if (chosen?.classId != null) {
+      _openChapters(chosen!.classId!, subject.subjectName);
+    }
+  }
+
+  Future<void> _openSubject(CourseSubjectGroup subject) async {
+    setState(() => _resolvingSubjectId = subject.subjectId);
+    try {
+      final links = subject.classLinks;
+      final hasUnrestrictedLink = links.any((link) => link.classId == null);
+
+      if (hasUnrestrictedLink) {
+        await _autoResolveAndOpen(subject);
         return;
       }
 
-      final className = context.read<SessionState>().user?.className;
-      final resolved = className == null
-          ? classes.first
-          : classes.firstWhere(
-              (c) => c.name.trim().toLowerCase() == className.trim().toLowerCase(),
-              orElse: () => classes.first,
-            );
+      final specificLinks = links.where((link) => link.classId != null).toList();
+      if (specificLinks.length == 1) {
+        _openChapters(specificLinks.first.classId!, subject.subjectName);
+        return;
+      }
 
-      if (!mounted) return;
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ChapterPage(
-            course: widget.course,
-            classId: resolved.id,
-            subjectName: subject.name,
-          ),
-        ),
-      );
+      await _pickClassAndOpen(subject, specificLinks);
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
@@ -88,7 +173,7 @@ class _SubjectPageState extends State<SubjectPage> {
         title: Text(widget.course.courseName),
       ),
       body: AppBackground(
-        child: FutureBuilder<List<SubjectItem>>(
+        child: FutureBuilder<List<CourseSubjectGroup>>(
           future: _future,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
@@ -126,7 +211,7 @@ class _SubjectPageState extends State<SubjectPage> {
 
             final subjects = (snapshot.data ?? [])
                 .where(
-                  (subject) => subject.name.toLowerCase().contains(
+                  (subject) => subject.subjectName.toLowerCase().contains(
                     _query.trim().toLowerCase(),
                   ),
                 )
@@ -167,7 +252,7 @@ class _SubjectPageState extends State<SubjectPage> {
                   )
                 else
                   ...subjects.map((subject) {
-                    final isResolving = _resolvingSubjectId == subject.id;
+                    final isResolving = _resolvingSubjectId == subject.subjectId;
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 14),
                       child: AppCard(
@@ -191,7 +276,7 @@ class _SubjectPageState extends State<SubjectPage> {
                             const SizedBox(width: 14),
                             Expanded(
                               child: Text(
-                                subject.name,
+                                subject.subjectName,
                                 style: AppTypography.titleMedium,
                               ),
                             ),
