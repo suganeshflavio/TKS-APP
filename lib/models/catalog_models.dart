@@ -91,6 +91,32 @@ class CourseSubjectGroup {
   final List<CourseSubjectClassLink> classLinks;
 }
 
+/// One of a course's Topic links (`CourseTopic`) — the primary way a course
+/// now grants Subject/Class/Chapter/Topic hierarchy access. Carries the
+/// full chapter -> class -> subject chain so the app can derive the whole
+/// browsable tree from this flat list alone, no separate catalog calls.
+class CourseTopicRef {
+  const CourseTopicRef({
+    required this.topicId,
+    required this.topicName,
+    required this.chapterId,
+    required this.chapterName,
+    required this.classId,
+    required this.className,
+    required this.subjectId,
+    required this.subjectName,
+  });
+
+  final String topicId;
+  final String topicName;
+  final String chapterId;
+  final String chapterName;
+  final String classId;
+  final String className;
+  final String subjectId;
+  final String subjectName;
+}
+
 class TopicContentRef {
   const TopicContentRef({required this.id, required this.name});
 

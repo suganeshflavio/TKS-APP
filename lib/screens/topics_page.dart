@@ -27,11 +27,20 @@ class TopicsPage extends StatefulWidget {
     required this.course,
     required this.chapterId,
     required this.chapterName,
+    this.topicIds,
   });
 
   final UserCourse course;
   final String chapterId;
   final String chapterName;
+
+  /// When provided (topic-linking mode — the course has explicit
+  /// `CourseTopic` links), only these topic ids are shown, and
+  /// [CatalogRepository.fetchTopics] is skipped entirely. When null
+  /// (legacy `CourseSubject` mode), every topic of the chapter is fetched
+  /// and filtered down to what the student's course grant covers, same as
+  /// before this feature existed.
+  final List<String>? topicIds;
 
   @override
   State<TopicsPage> createState() => _TopicsPageState();
@@ -49,13 +58,15 @@ class _TopicsPageState extends State<TopicsPage> {
   }
 
   Future<List<_GrantedTopic>> _load() async {
-    final topics = await _repository.fetchTopics(widget.chapterId);
+    final topicIds =
+        widget.topicIds ??
+        (await _repository.fetchTopics(widget.chapterId)).map((t) => t.id).toList();
     final grantedVideoIds = widget.course.grantedVideoIds;
     final grantedNotesIds = widget.course.grantedNotesIds;
     final grantedTestIds = widget.course.grantedTestIds;
 
     final details = await Future.wait(
-      topics.map((topic) => _repository.fetchTopicById(topic.id)),
+      topicIds.map((id) => _repository.fetchTopicById(id)),
     );
 
     return details

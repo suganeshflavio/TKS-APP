@@ -20,11 +20,19 @@ class ChapterPage extends StatefulWidget {
     required this.course,
     required this.classId,
     required this.subjectName,
+    this.topicRefs,
   });
 
   final UserCourse course;
   final String classId;
   final String subjectName;
+
+  /// When provided (topic-linking mode), chapters are derived from these
+  /// refs alone — no `/api/chapters` call — and only chapters that
+  /// actually have a linked topic are shown. When null (legacy
+  /// `CourseSubject` mode), every chapter of [classId] is fetched, same as
+  /// before this feature existed.
+  final List<CourseTopicRef>? topicRefs;
 
   @override
   State<ChapterPage> createState() => _ChapterPageState();
@@ -38,10 +46,27 @@ class _ChapterPageState extends State<ChapterPage> {
   @override
   void initState() {
     super.initState();
-    _future = _repository.fetchChapters(widget.classId);
+    _future = _load();
   }
 
-  void _retry() => setState(() => _future = _repository.fetchChapters(widget.classId));
+  Future<List<ChapterItem>> _load() {
+    final topicRefs = widget.topicRefs;
+    if (topicRefs != null) {
+      final chapters = <ChapterItem>[];
+      final seen = <String>{};
+      for (final ref in topicRefs) {
+        if (seen.add(ref.chapterId)) {
+          chapters.add(
+            ChapterItem(id: ref.chapterId, name: ref.chapterName, classId: widget.classId),
+          );
+        }
+      }
+      return Future.value(chapters);
+    }
+    return _repository.fetchChapters(widget.classId);
+  }
+
+  void _retry() => setState(() => _future = _load());
 
   @override
   Widget build(BuildContext context) {
@@ -134,12 +159,18 @@ class _ChapterPageState extends State<ChapterPage> {
                       child: AppCard(
                         padding: const EdgeInsets.all(18),
                         onTap: () {
+                          final topicRefs = widget.topicRefs
+                              ?.where((ref) => ref.chapterId == chapter.id)
+                              .toList();
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => TopicsPage(
                                 course: widget.course,
                                 chapterId: chapter.id,
                                 chapterName: chapter.name,
+                                topicIds: topicRefs
+                                    ?.map((ref) => ref.topicId)
+                                    .toList(),
                               ),
                             ),
                           );

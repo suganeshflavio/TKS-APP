@@ -89,6 +89,51 @@ class CatalogRepository {
     }
   }
 
+  /// Topics linked to a specific course (`CourseTopic`), via
+  /// `GET /api/courses/:id`. This is the primary source of a course's
+  /// browsable Subject/Class/Chapter/Topic tree — [fetchCourseSubjects] is
+  /// now a legacy fallback for courses that predate topic-level linking.
+  Future<List<CourseTopicRef>> fetchCourseTopics(String courseId) async {
+    try {
+      final response = await _client.get('/api/courses/$courseId');
+      final data = _dataOf(response.data);
+      final links = data?['topics'] as List<dynamic>? ?? const [];
+
+      final refs = <CourseTopicRef>[];
+      for (final raw in links) {
+        if (raw is! Map<String, dynamic>) continue;
+        final topic = raw['topic'];
+        if (topic is! Map<String, dynamic>) continue;
+        final chapter = topic['chapter'];
+        if (chapter is! Map<String, dynamic>) continue;
+        final klass = chapter['class'];
+        if (klass is! Map<String, dynamic>) continue;
+        final subject = klass['subject'];
+        if (subject is! Map<String, dynamic>) continue;
+
+        final topicId = topic['id'] as String? ?? '';
+        if (topicId.isEmpty) continue;
+
+        refs.add(
+          CourseTopicRef(
+            topicId: topicId,
+            topicName: topic['name'] as String? ?? '',
+            chapterId: chapter['id'] as String? ?? '',
+            chapterName: chapter['name'] as String? ?? '',
+            classId: klass['id'] as String? ?? '',
+            className: klass['name'] as String? ?? '',
+            subjectId: subject['id'] as String? ?? '',
+            subjectName: subject['name'] as String? ?? '',
+          ),
+        );
+      }
+
+      return refs;
+    } on DioException catch (e) {
+      throw mapDioError(e);
+    }
+  }
+
   Future<List<ClassItem>> fetchClasses(String subjectId) async {
     try {
       final response = await _client.get(
