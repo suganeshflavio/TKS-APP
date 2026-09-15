@@ -234,8 +234,8 @@ class _ContactPageState extends State<ContactPage> {
                   iconBg: Color(0xFFEFF6FF),
                   iconColor: Color(0xFF2563EB),
                   title: 'Email Support',
-                  primaryDetail: 'support@tksacademy.com',
-                  secondaryDetail: 'info@tksacademy.com',
+                  primaryDetail: 'tksacademy33@gmail.com',
+                  // secondaryDetail: 'demo33@gmail.com',
                 ),
                 const SizedBox(height: 10),
                 const _ContactDetailCard(
@@ -243,8 +243,8 @@ class _ContactPageState extends State<ContactPage> {
                   iconBg: Color(0xFFECFDF5),
                   iconColor: Color(0xFF059669),
                   title: 'Phone & WhatsApp',
-                  primaryDetail: '+91 98765 43210',
-                  secondaryDetail: '+1 (800) 555-0199 (Toll Free)',
+                  primaryDetail: '+91 82207 25085',
+                  // secondaryDetail: '+91 78956 64688',
                 ),
                 const SizedBox(height: 10),
                 const _ContactDetailCard(
@@ -252,8 +252,8 @@ class _ContactPageState extends State<ContactPage> {
                   iconBg: Color(0xFFFFF7ED),
                   iconColor: Color(0xFFEA580C),
                   title: 'Campus / Main Office',
-                  primaryDetail: 'TKS Tower, 4th Floor, Knowledge Park',
-                  secondaryDetail: 'Tech Corridor, Metro City - 600001',
+                  primaryDetail: 'No:6, 2nd cross vidhya Nagar, Ammapet Salem - 636003',
+                  // secondaryDetail: 'Ammapet Salem - 636003',
                 ),
                 // const SizedBox(height: 10),
                 // const _ContactDetailCard(
@@ -424,7 +424,7 @@ class _ContactDetailCard extends StatelessWidget {
     required this.iconColor,
     required this.title,
     required this.primaryDetail,
-    required this.secondaryDetail,
+    // required this.secondaryDetail,
   });
 
   final IconData icon;
@@ -432,7 +432,7 @@ class _ContactDetailCard extends StatelessWidget {
   final Color iconColor;
   final String title;
   final String primaryDetail;
-  final String secondaryDetail;
+  // final String secondaryDetail;
 
   @override
   Widget build(BuildContext context) {
@@ -469,14 +469,14 @@ class _ContactDetailCard extends StatelessWidget {
                     color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  secondaryDetail,
-                  style: AppTypography.bodyMedium.copyWith(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
+                // const SizedBox(height: 2),
+                // Text(
+                //   secondaryDetail,
+                //   style: AppTypography.bodyMedium.copyWith(
+                //     fontSize: 13,
+                //     color: AppColors.textSecondary,
+                //   ),
+                // ),
               ],
             ),
           ),
