@@ -265,18 +265,18 @@ class PrivacyPolicyPage extends StatelessWidget {
                       const SizedBox(height: 16),
                       const _ContactQuickRow(
                         icon: Icons.email_rounded,
-                        text: 'support@tksacademy.com / info@tksacademy.com',
+                        text: 'tksdeveloper33@gmail.com',
                       ),
                       const SizedBox(height: 10),
                       const _ContactQuickRow(
                         icon: Icons.phone_rounded,
-                        text: '+91 98765 43210 (Toll Free: +1 800 555 0199)',
+                        text: '+91 82207 25085',
                       ),
                       const SizedBox(height: 10),
                       const _ContactQuickRow(
                         icon: Icons.location_on_rounded,
                         text:
-                            'TKS Tower, 4th Floor, Knowledge Park, Tech Corridor, Metro City - 600001',
+                            'No:6, 2nd cross vidhya Nagar, Ammapet Salem - 636003',
                       ),
                       const SizedBox(height: 20),
                       AppPrimaryButton(

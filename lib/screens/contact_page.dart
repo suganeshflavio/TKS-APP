@@ -234,7 +234,7 @@ class _ContactPageState extends State<ContactPage> {
                   iconBg: Color(0xFFEFF6FF),
                   iconColor: Color(0xFF2563EB),
                   title: 'Email Support',
-                  primaryDetail: 'tksacademy33@gmail.com',
+                  primaryDetail: 'tksdeveloper33@gmail.com',
                   // secondaryDetail: 'demo33@gmail.com',
                 ),
                 const SizedBox(height: 10),
