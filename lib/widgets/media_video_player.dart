@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
+import 'video_thumbnail.dart';
+
 const _speedOptions = [1.0, 1.5, 2.0, 2.5, 3.0];
 
 String _formatSpeed(double speed) {
@@ -18,16 +20,21 @@ String _formatDuration(Duration d) {
 }
 
 class MediaVideoPlayer extends StatefulWidget {
-  const MediaVideoPlayer({super.key, required this.videoUrl});
+  const MediaVideoPlayer({
+    super.key,
+    required this.videoUrl,
+    this.thumbnailUrl,
+  });
 
   final String videoUrl;
+  final String? thumbnailUrl;
 
   @override
   State<MediaVideoPlayer> createState() => _MediaVideoPlayerState();
 }
 
 class _MediaVideoPlayerState extends State<MediaVideoPlayer> {
-  late final VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   Timer? _autoHideTimer;
   bool _controlsVisible = true;
   bool _hasError = false;
@@ -36,26 +43,75 @@ class _MediaVideoPlayerState extends State<MediaVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
-      ..addListener(_onValueChanged)
-      ..initialize()
-          .then((_) {
-            if (mounted) setState(() {});
-          })
-          .catchError((Object error, StackTrace stackTrace) {
-            if (mounted) setState(() => _hasError = true);
-          });
+    _initController();
+  }
+
+  @override
+  void didUpdateWidget(covariant MediaVideoPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoUrl != widget.videoUrl) {
+      _disposeController();
+      _initController();
+    }
+  }
+
+  void _initController() {
+    final resolvedUrl = VideoThumbnail.resolveUrl(widget.videoUrl);
+    if (resolvedUrl == null) {
+      setState(() {
+        _controller = null;
+        _hasError = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _hasError = false;
+      _controlsVisible = true;
+    });
+
+    final controller = VideoPlayerController.networkUrl(Uri.parse(resolvedUrl));
+    _controller = controller;
+    controller.addListener(_onValueChanged);
+    controller
+        .initialize()
+        .then((_) {
+          if (mounted && _controller == controller) setState(() {});
+        })
+        .catchError((Object error, StackTrace stackTrace) {
+          if (mounted && _controller == controller) {
+            setState(() => _hasError = true);
+          }
+        });
     _scheduleAutoHide();
   }
 
+  void _disposeController() {
+    _autoHideTimer?.cancel();
+    _controller?.removeListener(_onValueChanged);
+    _controller?.dispose();
+    _controller = null;
+  }
+
+  void _retry() {
+    _disposeController();
+    _initController();
+  }
+
   void _onValueChanged() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    final hasControllerError = _controller?.value.hasError ?? false;
+    if (hasControllerError && !_hasError) {
+      setState(() => _hasError = true);
+      return;
+    }
+    setState(() {});
   }
 
   void _scheduleAutoHide() {
     _autoHideTimer?.cancel();
     _autoHideTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted && _controller.value.isPlaying) {
+      if (mounted && (_controller?.value.isPlaying ?? false)) {
         setState(() => _controlsVisible = false);
       }
     });
@@ -67,16 +123,20 @@ class _MediaVideoPlayerState extends State<MediaVideoPlayer> {
   }
 
   void _togglePlay() {
-    if (_controller.value.isPlaying) {
-      _controller.pause();
+    final controller = _controller;
+    if (controller == null) return;
+    if (controller.value.isPlaying) {
+      controller.pause();
     } else {
-      _controller.play();
+      controller.play();
       _scheduleAutoHide();
     }
   }
 
   Future<void> _seekRelative(Duration delta) async {
-    final value = _controller.value;
+    final controller = _controller;
+    if (controller == null) return;
+    final value = controller.value;
     if (!value.isInitialized) return;
 
     final duration = value.duration;
@@ -86,22 +146,26 @@ class _MediaVideoPlayerState extends State<MediaVideoPlayer> {
       duration.inMilliseconds,
     );
     final target = Duration(milliseconds: targetMs);
-    await _controller.seekTo(target);
+    await controller.seekTo(target);
     _scheduleAutoHide();
   }
 
   Future<void> _setSpeed(double speed) async {
-    await _controller.setPlaybackSpeed(speed);
+    final controller = _controller;
+    if (controller == null) return;
+    await controller.setPlaybackSpeed(speed);
     if (mounted) setState(() => _speed = speed);
     _scheduleAutoHide();
   }
 
   Future<void> _openFullscreen() async {
+    final controller = _controller;
+    if (controller == null) return;
     await Navigator.of(context).push(
       MaterialPageRoute(
         fullscreenDialog: true,
         builder: (_) => _FullscreenVideoPage(
-          controller: _controller,
+          controller: controller,
           speed: _speed,
           onSpeedChanged: _setSpeed,
         ),
@@ -111,43 +175,81 @@ class _MediaVideoPlayerState extends State<MediaVideoPlayer> {
 
   @override
   void dispose() {
-    _autoHideTimer?.cancel();
-    _controller.removeListener(_onValueChanged);
-    _controller.dispose();
+    _disposeController();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
     if (_hasError) {
       return AspectRatio(
         aspectRatio: 16 / 9,
-        child: Container(
-          color: Colors.black87,
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(16),
-          child: const Text(
-            'Unable to play this video.',
-            style: TextStyle(color: Colors.white),
-          ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            VideoThumbnail(
+              thumbnailUrl: widget.thumbnailUrl,
+              borderRadius: 0,
+              showPlayBadge: false,
+            ),
+            ColoredBox(
+              color: Colors.black.withValues(alpha: 0.72),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Unable to play this video.',
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton.icon(
+                      onPressed: _retry,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white54),
+                      ),
+                      icon: const Icon(Icons.refresh_rounded, size: 18),
+                      label: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
 
-    if (!_controller.value.isInitialized) {
-      return const AspectRatio(
+    if (controller == null || !controller.value.isInitialized) {
+      return AspectRatio(
         aspectRatio: 16 / 9,
-        child: ColoredBox(
-          color: Colors.black87,
-          child: Center(child: CircularProgressIndicator(color: Colors.white)),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            VideoThumbnail(
+              thumbnailUrl: widget.thumbnailUrl,
+              borderRadius: 0,
+              showPlayBadge: false,
+            ),
+            ColoredBox(
+              color: Colors.black.withValues(alpha: 0.45),
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            ),
+          ],
         ),
       );
     }
 
     return AspectRatio(
-      aspectRatio: _controller.value.aspectRatio,
+      aspectRatio: controller.value.aspectRatio,
       child: _VideoSurface(
-        controller: _controller,
+        controller: controller,
         controlsVisible: _controlsVisible,
         onToggleControls: _toggleControls,
         onTogglePlay: _togglePlay,

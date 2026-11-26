@@ -29,6 +29,8 @@ class VideoLesson {
     required this.isActive,
     required this.isPreview,
     this.duration,
+    this.thumbnailFileName,
+    this.thumbnailUrl,
   });
 
   final String id;
@@ -38,6 +40,8 @@ class VideoLesson {
   final dynamic duration;
   final bool isActive;
   final bool isPreview;
+  final String? thumbnailFileName;
+  final String? thumbnailUrl;
 
   factory VideoLesson.fromJson(Map<String, dynamic> json) => VideoLesson(
     id: json['id'] as String? ?? '',
@@ -47,5 +51,7 @@ class VideoLesson {
     duration: json['duration'],
     isActive: json['isActive'] as bool? ?? true,
     isPreview: json['isPreview'] as bool? ?? false,
+    thumbnailFileName: json['thumbnailFileName'] as String?,
+    thumbnailUrl: json['thumbnailUrl'] as String?,
   );
 }

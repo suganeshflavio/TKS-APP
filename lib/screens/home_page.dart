@@ -17,6 +17,7 @@ import '../widgets/brand_title.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/reviews_carousel.dart';
 import '../widgets/skeleton.dart';
+import '../widgets/video_thumbnail.dart';
 import 'about_page.dart';
 import 'contact_page.dart';
 import 'course_mcq_tests_page.dart';
@@ -376,19 +377,28 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                             onTap: () => _openCourse(context, course),
                             child: Row(
                               children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryLight,
-                                    borderRadius: BorderRadius.circular(14),
+                                if (course.category == CourseCategory.video)
+                                  VideoThumbnail(
+                                    thumbnailUrl: course.primaryThumbnailUrl,
+                                    width: 68,
+                                    height: 48,
+                                    borderRadius: 12,
+                                    showPlayBadge: false,
+                                  )
+                                else
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryLight,
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: const Icon(
+                                      Icons.menu_book_rounded,
+                                      color: AppColors.primaryDark,
+                                      size: 24,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.menu_book_rounded,
-                                    color: AppColors.primaryDark,
-                                    size: 24,
-                                  ),
-                                ),
                                 const SizedBox(width: 14),
                                 Expanded(
                                   child: Column(

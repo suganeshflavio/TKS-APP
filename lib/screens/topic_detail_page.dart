@@ -14,6 +14,7 @@ import '../widgets/comments_section.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/media_video_player.dart';
 import '../widgets/notes_viewer.dart';
+import '../widgets/video_thumbnail.dart';
 import 'notes_pdf_page.dart';
 import 'quiz_page.dart';
 
@@ -130,7 +131,11 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
                 final video = snapshot.data!;
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: MediaVideoPlayer(videoUrl: video.videoUrl),
+                  child: MediaVideoPlayer(
+                    key: ValueKey(video.id),
+                    videoUrl: video.videoUrl,
+                    thumbnailUrl: video.thumbnailUrl,
+                  ),
                 );
               },
             ),
@@ -290,6 +295,8 @@ class _TopicDetailPageState extends State<TopicDetailPage> {
                 iconBackground: AppColors.primaryLight,
                 iconColor: AppColors.primaryDark,
                 title: ref.name,
+                thumbnailUrl: ref.thumbnailUrl,
+                showVideoThumbnail: true,
                 selected: ref.id == _selectedVideo?.id,
                 onTap: () {
                   if (_openedNote != null) _closeNote();
@@ -431,6 +438,8 @@ class _ContentTile extends StatelessWidget {
     required this.onTap,
     this.trailingIcon = Icons.arrow_forward_ios_rounded,
     this.selected = false,
+    this.thumbnailUrl,
+    this.showVideoThumbnail = false,
   });
 
   final IconData icon;
@@ -440,6 +449,8 @@ class _ContentTile extends StatelessWidget {
   final VoidCallback onTap;
   final IconData trailingIcon;
   final bool selected;
+  final String? thumbnailUrl;
+  final bool showVideoThumbnail;
 
   @override
   Widget build(BuildContext context) {
@@ -448,16 +459,31 @@ class _ContentTile extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: iconBackground,
-              borderRadius: BorderRadius.circular(12),
-              border: selected ? Border.all(color: iconColor, width: 2) : null,
+          if (showVideoThumbnail)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: selected ? Border.all(color: iconColor, width: 2) : null,
+              ),
+              child: VideoThumbnail(
+                thumbnailUrl: thumbnailUrl,
+                width: 68,
+                height: 44,
+                borderRadius: 9,
+                showPlayBadge: true,
+              ),
+            )
+          else
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: iconBackground,
+                borderRadius: BorderRadius.circular(12),
+                border: selected ? Border.all(color: iconColor, width: 2) : null,
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
             ),
-            child: Icon(icon, color: iconColor, size: 22),
-          ),
           const SizedBox(width: 14),
           Expanded(
             child: Text(

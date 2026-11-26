@@ -12,6 +12,7 @@ import '../widgets/custom_buttons.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/inline_search_field.dart';
 import '../widgets/skeleton.dart';
+import '../widgets/video_thumbnail.dart';
 import 'topic_detail_page.dart';
 
 /// One topic filtered down to only the content this student's course grant
@@ -202,19 +203,28 @@ class _TopicsPageState extends State<TopicsPage> {
                         },
                         child: Row(
                           children: [
-                            Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(14),
+                            if (detail.videos.isNotEmpty)
+                              VideoThumbnail(
+                                thumbnailUrl: detail.primaryVideoThumbnailUrl,
+                                width: 80,
+                                height: 50,
+                                borderRadius: 12,
+                                showPlayBadge: true,
+                              )
+                            else
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryLight,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(
+                                  Icons.description_outlined,
+                                  color: AppColors.primaryDark,
+                                  size: 24,
+                                ),
                               ),
-                              child: const Icon(
-                                Icons.play_arrow_rounded,
-                                color: AppColors.primaryDark,
-                                size: 28,
-                              ),
-                            ),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Column(

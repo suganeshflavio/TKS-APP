@@ -178,6 +178,21 @@ class CatalogRepository {
     }
   }
 
+  Future<List<CourseVideoRef>> fetchCourseVideos(String courseId) async {
+    try {
+      final response = await _client.get('/api/courses/$courseId');
+      final data = _dataOf(response.data);
+      final links = data?['videos'] as List<dynamic>? ?? const [];
+      return links
+          .whereType<Map<String, dynamic>>()
+          .map(CourseVideoRef.fromJson)
+          .where((v) => v.id.isNotEmpty)
+          .toList();
+    } on DioException catch (e) {
+      throw mapDioError(e);
+    }
+  }
+
   Future<TopicDetail> fetchTopicById(String topicId) async {
     try {
       final response = await _client.get('/api/topics/$topicId');

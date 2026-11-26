@@ -118,10 +118,43 @@ class CourseTopicRef {
 }
 
 class TopicContentRef {
-  const TopicContentRef({required this.id, required this.name});
+  const TopicContentRef({
+    required this.id,
+    required this.name,
+    this.thumbnailFileName,
+    this.thumbnailUrl,
+  });
 
   final String id;
   final String name;
+  final String? thumbnailFileName;
+  final String? thumbnailUrl;
+}
+
+class CourseVideoRef {
+  const CourseVideoRef({
+    required this.id,
+    required this.videoName,
+    this.thumbnailFileName,
+    this.thumbnailUrl,
+  });
+
+  final String id;
+  final String videoName;
+  final String? thumbnailFileName;
+  final String? thumbnailUrl;
+
+  factory CourseVideoRef.fromJson(Map<String, dynamic> json) {
+    final video = json['video'] is Map<String, dynamic>
+        ? json['video'] as Map<String, dynamic>
+        : json;
+    return CourseVideoRef(
+      id: (video['id'] ?? json['videoId']) as String? ?? '',
+      videoName: video['videoName'] as String? ?? '',
+      thumbnailFileName: video['thumbnailFileName'] as String?,
+      thumbnailUrl: video['thumbnailUrl'] as String?,
+    );
+  }
 }
 
 class TopicDetail {
@@ -142,15 +175,26 @@ class TopicDetail {
   bool get hasAnyContent =>
       videos.isNotEmpty || notes.isNotEmpty || mcqTests.isNotEmpty;
 
+  String? get primaryVideoThumbnailUrl {
+    for (final video in videos) {
+      final url = video.thumbnailUrl?.trim();
+      if (url != null && url.isNotEmpty) return url;
+    }
+    return null;
+  }
+
   factory TopicDetail.fromJson(Map<String, dynamic> json) {
     List<TopicContentRef> parseRefs(String key, String nameKey) {
       return (json[key] as List<dynamic>? ?? [])
-          .map(
-            (e) => TopicContentRef(
-              id: (e as Map<String, dynamic>)['id'] as String? ?? '',
-              name: e[nameKey] as String? ?? '',
-            ),
-          )
+          .map((e) {
+            final map = e as Map<String, dynamic>;
+            return TopicContentRef(
+              id: map['id'] as String? ?? '',
+              name: map[nameKey] as String? ?? '',
+              thumbnailFileName: map['thumbnailFileName'] as String?,
+              thumbnailUrl: map['thumbnailUrl'] as String?,
+            );
+          })
           .toList();
     }
 

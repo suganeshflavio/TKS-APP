@@ -50,15 +50,24 @@ enum CourseCategory {
 }
 
 class UserAccessVideo {
-  const UserAccessVideo({required this.videoId, required this.videoName});
+  const UserAccessVideo({
+    required this.videoId,
+    required this.videoName,
+    this.thumbnailFileName,
+    this.thumbnailUrl,
+  });
 
   final String videoId;
   final String videoName;
+  final String? thumbnailFileName;
+  final String? thumbnailUrl;
 
   factory UserAccessVideo.fromJson(Map<String, dynamic> json) =>
       UserAccessVideo(
         videoId: json['videoId'] as String? ?? '',
         videoName: json['videoName'] as String? ?? '',
+        thumbnailFileName: json['thumbnailFileName'] as String?,
+        thumbnailUrl: json['thumbnailUrl'] as String?,
       );
 }
 
@@ -116,6 +125,14 @@ class UserCourse {
   Set<String> get grantedVideoIds => videos.map((v) => v.videoId).toSet();
   Set<String> get grantedNotesIds => notes.map((n) => n.notesId).toSet();
   Set<String> get grantedTestIds => mcqTests.map((t) => t.testId).toSet();
+
+  String? get primaryThumbnailUrl {
+    for (final video in videos) {
+      final url = video.thumbnailUrl?.trim();
+      if (url != null && url.isNotEmpty) return url;
+    }
+    return null;
+  }
 
   factory UserCourse.fromJson(Map<String, dynamic> json) => UserCourse(
     courseId: json['courseId'] as String,

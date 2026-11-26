@@ -10,6 +10,7 @@ import '../widgets/custom_buttons.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/inline_search_field.dart';
 import '../widgets/skeleton.dart';
+import '../widgets/video_thumbnail.dart';
 import 'course_mcq_tests_page.dart';
 import 'course_notes_page.dart';
 import 'subject_page.dart';
@@ -194,16 +195,25 @@ class _CourseCard extends StatelessWidget {
         onTap: onTap,
         child: Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: style.background,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: style.foreground.withValues(alpha: 0.2)),
+            if (course.category == CourseCategory.video)
+              VideoThumbnail(
+                thumbnailUrl: course.primaryThumbnailUrl,
+                width: 72,
+                height: 52,
+                borderRadius: 12,
+                showPlayBadge: false,
+              )
+            else
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: style.background,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: style.foreground.withValues(alpha: 0.2)),
+                ),
+                child: Icon(style.icon, color: style.foreground, size: 26),
               ),
-              child: Icon(style.icon, color: style.foreground, size: 26),
-            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
